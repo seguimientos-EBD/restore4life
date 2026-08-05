@@ -1,0 +1,1 @@
+https://www.danubegis.org/geoserver/DRBMP2021/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=DRBMP2021:DRBD_2021&outputFormat=shape-zip&format_options=CHARSET:UTF-8

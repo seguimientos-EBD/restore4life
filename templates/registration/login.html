@@ -1,0 +1,20 @@
+<!-- templates/registration/login.html -->
+{% extends 'base.html' %}
+{% load static django_bootstrap5 %}
+
+{% block content %}
+<div class="row text-center">
+    <div class="col-6 mx-auto">
+        <div class="alert alert-info" role="alert">
+            Para poder trabajar con esta aplicación es necesario que te crees una cuenta.
+            La autenticación se hará mediante tokens que se envían por correo.
+        </div>
+        <p>Indica tu correo electrónico y te enviaremos un enlace de acceso.</p>
+        <form method="POST" class="text-center mx-auto" style="max-width: 320px;">
+            {% csrf_token %}
+            {% bootstrap_form form show_label=False %}
+            {% bootstrap_button button_type="submit" content="Enviar enlace de acceso" %}
+        </form>
+    </div>
+</div>
+{% endblock %}

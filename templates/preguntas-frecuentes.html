@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="text-center">Preguntas frecuentes</h3>
+<p>A continuación se ofrece respuesta a las preguntas más habituales sobre esta aplicación y base de datos:</p>
+
+<h2>¿Por qué hay varios tipos de censo?</h2>
+
+<p>Los humedales de Doñana son espacios muy extensos y el número de aves que los habitan puede ser también muy numeroso. Aproximarse al número de ejemplares de cada especie requiere del uso de varias técnicas de muestreo que no siempre son válidas para todas ellas. Los censos aéreos permiten muestrear una superficie mucho mayor que los censos terrestres en un periodo de tiempo reducido, minimizando las duplicidades en los conteos. Por otro lado, el número de especies que es posible identificar con esta técnica es mucho menor (tanto por su tamaño como por su comportamiento). Además, en buena parte de las ocasiones, los conteos se producen sobre bandos muy grandes y en movimiento, lo que impide contar individuo por individuo, siendo necesaria la aplicación de la técnica de aforo (selecciona "ver protocolo" en la página de inicio). Por el contrario, los censos terrestres permiten identificar un número mayor de especies y, en general, permiten un conteo más exhaustivo mediante el uso de material óptico. Sin embargo, el espacio de observación está más restringido y el tiempo empleado en censar todas las localidades se incrementa aumentando el riesgo de realizar dobles conteos. Por último, la especial geometría de la línea de costa requiere la aplicación de una técnica de muestreo diferente a la empleada en los otros dos censos.</p>
+
+<h2>¿Por qué en algunas observaciones en el campo "especie" aparece más de una?</h2>
+
+<p>En los censos aéreos, y en menor medida también en los censos terrestres, resulta imposible distinguir algunas especies debido a la distancia a la que se hace la observación y a la similitud entre ellas. Por ello, estas especies se identifican como pertenecientes a un binomio o grupo de especies.</p>
+
+<h2>¿Por qué no coincide el número de individuos censado mediante las diferentes técnicas?</h2>
+
+<p>Cada tipo de censo es más o menos adecuado para cada localidad y especie por lo que no cabe esperar que los números coincidan. </p> 
+
+<h2>¿Qué diferencia un 0 de un -/NA en las observaciones de una especie?</h2>
+
+<p>Si el valor es 0, significa que la localidad en cuestión se ha censado en la fecha indicada y no se ha detectado ningún individuo de esa especie en dicha localidad.
+Si el valor es -/NA, significa que esa localidad concreta (generalmente de nivel geográfico 3 para el aéreo, y de nivel geográfico 4 para terrestre y cosero), para un determinado código de censo (CA_añomesdía, CT_añomesdía o CP_añomesdía), no se ha censado y por lo tanto no se conoce la presencia o la ausencia de dicha especie en esa localidad.</p>
+
+{% endblock %}

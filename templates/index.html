@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static django_bootstrap5 %}
+{% block content %}
+{% if not earthengine_account %}
+    <div class="alert alert-warning text-center" role="alert">
+        <p>Todavía no has indicado tu clave de Google Earth Engine.</p>
+        <p><a href="{% url 'earthengine:connect' %}" class="alert-link">Conecta tu cuenta</a> para poder trabajar.</p>
+    </div>
+{% endif %}
+<h2 class="h4 mb-3">Ámbitos</h2>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+    {% for ambito in ambitos %}
+        <div class="col">
+            <div class="card h-100">
+                {% if ambito.geojson %}
+                    <div class="ambito-miniatura card-img-top" style="height: 160px;" data-geojson="{{ ambito.geojson }}"></div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h3 class="card-title h6">{{ ambito.nombre }}</h3>
+                    <p class="card-text small text-muted">{{ ambito.n_humedales }} humedal{{ ambito.n_humedales|pluralize:"es" }}</p>
+                    <a href="{% url 'ambitos:detalle' ambito.pk %}" class="btn btn-sm btn-primary mt-auto align-self-start">
+                        Ir a la zona de trabajo <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <p class="text-muted">Todavía no hay ningún ámbito dado de alta.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

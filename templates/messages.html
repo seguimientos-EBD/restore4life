@@ -1,0 +1,24 @@
+{% load static %}
+{% if messages %}
+    <div class="toast-container bottom-0 end-0 p-3">
+        {% for message in messages %}
+            <div id="toast{{forloop.counter}}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto">ICTS-Doñana</strong>
+                    <small>Ahora mismo</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    {{ message }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <script>
+        $(function() {
+            {% for message in messages %}
+            $("#toast{{forloop.counter}}").toast("show")
+            {% endfor %}
+        });
+    </script>
+{% endif %}

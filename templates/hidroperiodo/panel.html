@@ -1,0 +1,101 @@
+{% load django_bootstrap5 %}
+
+{% if not earthengine_account %}
+    <div class="alert alert-warning" role="alert">
+        <p class="mb-0">Para calcular capas necesitas
+            <a href="{% url 'earthengine:connect' %}" class="alert-link">conectar tu cuenta de Earth Engine</a>.</p>
+    </div>
+{% else %}
+<form class="hidroperiodo-panel card">
+    {{ opciones|json_script:"hidroperiodo-opciones" }}
+
+    <div class="card-body">
+        {# Sobre qué se calcula | qué producto se pinta | qué ha ido pasando. #}
+        <div class="row g-4">
+            <div class="col-lg-4">
+                {# A mano porque no sale de un formulario: cada opción lleva su propia URL de #}
+                {# teselas, ya que el cálculo es de un humedal y no del ámbito entero. #}
+                <div class="row mb-3">
+                    <label class="col-5 col-form-label-sm" for="id_humedal">Humedal</label>
+                    <div class="col-7">
+                        <select class="form-select form-select-sm js-humedal" id="id_humedal">
+                            <option value="">— Elige uno —</option>
+                            {% for humedal in humedales %}
+                                <option value="{{ humedal.pk }}" data-teselas-url="{% url 'hidroperiodo:teselas' humedal.pk %}">
+                                    {{ humedal.nombre }}{% if humedal.pais %} ({{ humedal.pais }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <h3 class="h6 text-uppercase text-muted">Serie temporal</h3>
+                {% bootstrap_field form_hidroperiodo.sensor size="sm" layout="horizontal" %}
+                {% bootstrap_field form_hidroperiodo.anio_inicio size="sm" layout="horizontal" %}
+                {% bootstrap_field form_hidroperiodo.anio_fin size="sm" layout="horizontal" %}
+                {% bootstrap_field form_hidroperiodo.indice size="sm" layout="horizontal" %}
+                {% bootstrap_field form_hidroperiodo.umbral size="sm" layout="horizontal" %}
+                {% bootstrap_field form_hidroperiodo.max_nubes size="sm" layout="horizontal" %}
+            </div>
+
+            <div class="col-lg-4">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#panel-hidroperiodo"
+                                type="button" role="tab">Hidroperiodo</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#panel-anomalias"
+                                type="button" role="tab">Anomalías</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#panel-twi"
+                                type="button" role="tab">TWI</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content border border-top-0 rounded-bottom p-3">
+                    <div class="tab-pane fade show active" id="panel-hidroperiodo" role="tabpanel">
+                        {% bootstrap_field form_hidroperiodo.banda size="sm" layout="horizontal" %}
+                        {% bootstrap_field form_hidroperiodo.anio size="sm" layout="horizontal" wrapper_class="mb-3 js-ciclo" %}
+                        <button type="button" class="btn btn-primary btn-sm js-ver-capa" data-producto="hidroperiodo">
+                            <i class="bi bi-layers"></i> Ver capa
+                        </button>
+                    </div>
+
+                    <div class="tab-pane fade" id="panel-anomalias" role="tabpanel">
+                        <p class="small text-muted">Compara cada ciclo con una media de referencia: días de más
+                            (verde) o de menos (rojo) respecto a ella.</p>
+                        {% bootstrap_field form_anomalias.referencia size="sm" layout="horizontal" %}
+                        {% bootstrap_field form_anomalias.capa size="sm" layout="horizontal" %}
+                        {% bootstrap_field form_anomalias.anio_anomalia size="sm" layout="horizontal" wrapper_class="mb-3 js-ciclo" %}
+                        <button type="button" class="btn btn-primary btn-sm js-ver-capa" data-producto="anomalias">
+                            <i class="bi bi-layers"></i> Ver capa
+                        </button>
+                    </div>
+
+                    <div class="tab-pane fade" id="panel-twi" role="tabpanel">
+                        <p class="small text-muted">Índice topográfico de humedad, solo a partir del terreno: no
+                            usa el sensor ni el periodo de al lado. El híbrido de 30 m afina la pendiente, pero la
+                            acumulación de flujo sigue siendo de 90 m.</p>
+                        {% bootstrap_field form_twi.fuente_dem size="sm" layout="horizontal" %}
+                        <button type="button" class="btn btn-primary btn-sm js-ver-capa" data-producto="twi">
+                            <i class="bi bi-layers"></i> Ver capa
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {# La bitácora del cálculo: en la app de notebook esto se imprimía por consola. #}
+            <div class="col-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h3 class="h6 text-uppercase text-muted mb-0">Registro</h3>
+                    <button type="button" class="btn btn-link btn-sm p-0 text-muted js-limpiar-registro">Limpiar</button>
+                </div>
+                <ol class="hidroperiodo-registro js-registro list-unstyled small font-monospace border rounded bg-body-tertiary p-2 mb-0"
+                    style="height: 17rem; overflow-y: auto;" aria-live="polite"></ol>
+            </div>
+        </div>
+    </div>
+</form>
+{% endif %}

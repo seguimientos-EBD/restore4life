@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+<div class="row">
+    <div class="col-10 mx-auto text-center">
+        <img src="{% static 'img/earth_engine_icon.png' %}" alt="Google Earth Engine" height="80" class="d-block mx-auto mb-4">
+        {% if account %}
+            <p class="text-center">Conectado como proyecto <strong>{{ account.ee_project }}</strong>.</p>
+            <form method="post" action="{% url 'earthengine:disconnect' %}">
+                {% csrf_token %}
+                {% bootstrap_button button_type="submit" content="Desconectar" button_class="btn-outline-danger" %}
+            </form>
+
+        {% elif auth_url %}
+
+            <div class="alert alert-info text-center" role="alert">
+                <p>Abre el siguiente enlace, autoriza el acceso con tu cuenta de Google y pega aquí el código de autorización que te muestre la página.</p>
+                <p><a href="{{ auth_url }}" target="_blank" rel="noopener">{{ auth_url }}</a></p>
+                <p class="mb-0"><strong>Nota:</strong> este proceso solo funciona correctamente en navegadores basados en Chromium, como Google Chrome o Brave.</p>
+            </div>
+            <form method="post" action="{% url 'earthengine:authorize' %}">
+                {% csrf_token %}
+                {% bootstrap_form authorize_form %}
+                {% bootstrap_button button_type="submit" content="Conectar" %}
+            </form>
+        {% else %}
+            <p class="text-center">Conecta tu propia cuenta de Google Earth Engine indicando el proyecto de Google Cloud con la Earth Engine API habilitada.</p>
+            <form method="post" action="{% url 'earthengine:connect' %}">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                {% bootstrap_button button_type="submit" content="Iniciar conexión" %}
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

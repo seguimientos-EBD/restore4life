@@ -1,0 +1,7 @@
+Hola,
+
+Para acceder a Restore4Life pulsa en el siguiente enlace (caduca en {{ minutes }} minutos):
+
+{{ token_url }}
+
+Si no has solicitado este acceso, puedes ignorar este mensaje.

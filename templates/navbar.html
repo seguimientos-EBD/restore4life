@@ -1,0 +1,53 @@
+{% load static django_bootstrap5 %}
+
+<header class="py-3 border-bottom">
+    <div class="container-xxl d-flex flex-column flex-lg-row justify-content-lg-between align-items-center gap-3">
+        <a href="/" class="d-flex align-items-center link-body-emphasis text-decoration-none">
+            <img src="{% static 'img/logo_icts_donana.png' %}" alt="ICTS Doñana" height="65px" class="me-3">
+            <span class="fs-4">{{titulo}}</span>
+        </a>
+        <div class="d-flex align-items-center flex-wrap justify-content-center gap-2">
+            <a target="_blank" href="https://www.ciencia.gob.es/"><img height="65px" src="{% static 'img/ciencia.png' %}" alt="Ministerio de ciencia innovación y universidades"></a>
+            <a target="_blank" href="https://www.csic.es/"><img height="65px" src="{% static 'img/CSIC.gif' %}" alt="Consejo Superior de Investigaciones Científicas"></a>
+            <a target="_blank" href="https://www.ebd.csic.es/"><img height="65px" src="{% static 'img/logo_ebd.png' %}" alt="Estación Biológica de Doñana"></a>
+        </div>
+    </div>
+</header>
+
+<nav class="navbar navbar-expand-lg py-1 bg-body-tertiary border-bottom">
+    <div class="container-xxl">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse d-lg-flex flex-wrap" id="mainNav">
+            <ul class="nav me-auto flex-column flex-lg-row">
+                <li class="nav-item"><a href="{% url 'index' %}" class="nav-link link-body-emphasis px-2 custom-underline">Home</a></li>
+            </ul>
+            <ul class="nav flex-column flex-lg-row align-items-center">
+                {% if earthengine_account %}
+                <li class="nav-item">
+                    <a class="nav-link px-2" href="{% url 'earthengine:connect' %}">
+                        <span class="badge rounded-pill text-bg-success">Earth Engine: {{ earthengine_account.ee_project }}</span>
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle custom-underline" href="#" data-bs-toggle="dropdown" aria-expanded="false">Ayuda</a>
+                    <ul class="dropdown-menu dropdown-menu-lg-end">
+                        <li><h6 class="dropdown-header">General</h6></li>
+                        <li><a class="dropdown-item" href="{% url 'preguntas-frecuentes' %}">Preguntas frecuentes</a></li>
+                        <li><a class="dropdown-item" href="{% url 'cita-recomendada' %}">Cita recomendada</a></li>
+                        {% if user.is_authenticated %}
+                        <li>
+                            <form action="{% url 'logout' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right"></i> Salir</button>
+                            </form>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

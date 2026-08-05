@@ -1,0 +1,9 @@
+<strong>
+    {% if site_censo_aereo %}
+    ICTS-DOÑANA ({% now "Y" %}). Base online: Censo aéreo de aves acuáticas en las marismas del Guadalquivir / Online database: Aerial waterbird census in the Guadalquivir river marshes. https://censos-aereos.icts-donana.es/. Estación Biológica de Doñana (EBD-CSIC). fecha y hora de descarga/ download date-time. {% now "Y-m-d G:i:s" %}
+    {% elif site_censo_terrestre %}
+    ICTS-DOÑANA ({% now "Y" %}). Base online: Censo terrestre de aves no paseriformes en las marismas del Guadalquivir / Online database: Terrestrial non-passerine-bird census in the Guadalquivir river marshes. https://censos-terrestres.icts-donana.es/. Estación Biológica de Doñana (EBD-CSIC). fecha y hora de descarga/ download date-time. {% now "Y-m-d G:i:s" %}
+    {% elif site_censo_costero %}
+    ICTS-DOÑANA ({% now "Y" %}). Base online: Censo de aves costeras en Doñana / Online database: Coastal bird census in Doñana. https://censos-costeros.icts-donana.es/. Estación Biológica de Doñana (EBD-CSIC). fecha y hora de descarga/ download date-time. {% now "Y-m-d G:i:s" %}
+    {% endif %}
+</strong>

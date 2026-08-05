@@ -1,0 +1,16 @@
+<!-- templates/registration/token_sent.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row text-center">
+    <div class="col-4 mx-auto">
+        <img class="my-5 img-fluid w-50" src="{% static 'img/logo_icts_donana.png' %}" >
+        <div class="alert alert-success" role="alert">
+            Te hemos enviado un enlace de acceso a <strong>{{ email }}</strong>.
+            Revisa tu bandeja de entrada (y la carpeta de spam) para continuar.
+        </div>
+        <a href="{% url 'login' %}">Volver</a>
+    </div>
+</div>
+{% endblock %}

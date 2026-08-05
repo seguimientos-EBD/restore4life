@@ -1,0 +1,25 @@
+{% load static sass_tags %}
+
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="referrer" content="origin">
+    <title>ICTS Doñana - Laboratorio vivo - Restore4Life</title>
+    <link rel="stylesheet" href="{% sass_src 'css/restore.scss' %}" />
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.ico' %}" />
+    {% block head %}{% endblock %}
+    {% include "matomo.html" %}
+    {% include 'js_imports.html' %}
+</head>
+
+<body class="mb-5">
+    {% include "navbar.html" %}
+    <div class="{% block tamaño_container %}container-xxl{% endblock tamaño_container %} pt-2">
+        {% block content %}{% endblock content %}
+        {% include "messages.html" %}
+        {% include "footer.html" %}
+    </div>
+    {% include "init_pills.html" %}
+</body>
+</html>
