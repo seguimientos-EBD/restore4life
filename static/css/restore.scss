@@ -145,15 +145,21 @@ body {
     background-color: $r4l-pale-green;
     border-bottom: 1px solid rgba($r4l-charcoal, .1);
 
+    // Some of these logos are JPEGs on white and some are transparent PNGs. Left alone
+    // the JPEGs would sit as white rectangles on the green; putting every one on the
+    // same white card makes that read as deliberate instead of as a mistake.
     img {
         height: 64px;
         width: auto;
+        background-color: $white;
+        padding: .4rem .6rem;
+        border-radius: .375rem;
     }
 
-    // A square mark reads smaller than a wide one at the same height, because the eye
+    // A boxy mark reads smaller than a wide one at the same height, because the eye
     // compares area rather than height. This gives it back the weight it loses.
-    .logo-square {
-        height: 92px;
+    .logo-tall {
+        height: 84px;
     }
 }
 
