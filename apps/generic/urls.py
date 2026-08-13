@@ -2,7 +2,7 @@ from accounts import views as accounts_views
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from generic.views import CitaRecomendadaView, IndexView, PreguntasFrecuentesView
+from generic.views import CitationView, FaqView, IndexView
 
 urlpatterns = [
     path('login/', accounts_views.RequestTokenView.as_view(), name="login"),
@@ -14,6 +14,6 @@ urlpatterns = [
     ),
     path('token/<str:token>/', accounts_views.TokenLoginView.as_view(), name="token-login"),
     path('', IndexView.as_view(), name='index'),
-    path('cita-recomendada/', CitaRecomendadaView.as_view(), name='cita-recomendada'),
-    path('preguntas-frecuentes/', PreguntasFrecuentesView.as_view(), name='preguntas-frecuentes'),
+    path('citation/', CitationView.as_view(), name='citation'),
+    path('faq/', FaqView.as_view(), name='faq'),
 ]

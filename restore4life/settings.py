@@ -57,9 +57,9 @@ INSTALLED_APPS = [
     # Custom apps
     'accounts',
     'generic',
-    'ambitos',
+    'areas',
     'earthengine',
-    'hidroperiodo',
+    'hydroperiod',
     # 3rd party apps
     'django_extensions',
     'django_yarnpkg',
@@ -126,11 +126,14 @@ YARN_INSTALLED_APPS = (
     "jquery-ui@^1.14.2",
     "leaflet@^1.9.4",
     "leaflet.fullscreen@^3.0.1",
+    # Same drawing plugin ipyleaflet uses under the hood, so drawing an ROI here
+    # behaves as it does in the notebook widget this app was ported from.
+    "leaflet-draw@^1.0.4",
 )
 
-# Reparto de columnas de los formularios horizontales. Solo lo usan los campos que
-# piden layout="horizontal", y los únicos que lo hacen (el panel de hidroperiodo) van
-# en tamaño pequeño: de ahí el col-form-label-sm.
+# Column split for horizontal forms. Only the fields that ask for layout="horizontal"
+# use it, and the only ones that do (the hydroperiod panel) are small-sized: hence the
+# col-form-label-sm.
 BOOTSTRAP5 = {
     'horizontal_label_class': 'col-5 col-form-label-sm',
     'horizontal_field_class': 'col-7',
@@ -155,7 +158,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = 'es-ES'
+LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Europe/Madrid'
 USE_I18N = True
 USE_TZ = True

@@ -3,30 +3,30 @@
 {% block content %}
 {% if not earthengine_account %}
     <div class="alert alert-warning text-center" role="alert">
-        <p>Todavía no has indicado tu clave de Google Earth Engine.</p>
-        <p><a href="{% url 'earthengine:connect' %}" class="alert-link">Conecta tu cuenta</a> para poder trabajar.</p>
+        <p>You have not provided your Google Earth Engine credentials yet.</p>
+        <p class="mb-0"><a href="{% url 'earthengine:connect' %}" class="alert-link">Connect your account</a> to start working.</p>
     </div>
 {% endif %}
-<h2 class="h4 mb-3">Ámbitos</h2>
+<h2 class="h4 mb-3">Study areas</h2>
 <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
-    {% for ambito in ambitos %}
+    {% for study_area in study_areas %}
         <div class="col">
             <div class="card h-100">
-                {% if ambito.geojson %}
-                    <div class="ambito-miniatura card-img-top" style="height: 160px;" data-geojson="{{ ambito.geojson }}"></div>
+                {% if study_area.geojson %}
+                    <div class="study-area-thumbnail card-img-top" style="height: 160px;" data-geojson="{{ study_area.geojson }}"></div>
                 {% endif %}
                 <div class="card-body d-flex flex-column">
-                    <h3 class="card-title h6">{{ ambito.nombre }}</h3>
-                    <p class="card-text small text-muted">{{ ambito.n_humedales }} humedal{{ ambito.n_humedales|pluralize:"es" }}</p>
-                    <a href="{% url 'ambitos:detalle' ambito.pk %}" class="btn btn-sm btn-primary mt-auto align-self-start">
-                        Ir a la zona de trabajo <i class="bi bi-arrow-right"></i>
+                    <h3 class="card-title h6">{{ study_area.name }}</h3>
+                    <p class="card-text small text-muted">{{ study_area.wetland_count }} wetland{{ study_area.wetland_count|pluralize }}</p>
+                    <a href="{% url 'areas:detail' study_area.pk %}" class="btn btn-sm btn-primary mt-auto align-self-start">
+                        Open study area <i class="bi bi-arrow-right"></i>
                     </a>
                 </div>
             </div>
         </div>
     {% empty %}
         <div class="col-12">
-            <p class="text-muted">Todavía no hay ningún ámbito dado de alta.</p>
+            <p class="text-muted">No study area has been registered yet.</p>
         </div>
     {% endfor %}
 </div>

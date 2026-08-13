@@ -1,19 +1,20 @@
-<!-- templates/registration/login.html -->
 {% extends 'base.html' %}
 {% load static django_bootstrap5 %}
 
+{% block title %}Sign in — Restore4Life{% endblock %}
+
 {% block content %}
 <div class="row text-center">
-    <div class="col-6 mx-auto">
+    <div class="col-lg-6 mx-auto">
         <div class="alert alert-info" role="alert">
-            Para poder trabajar con esta aplicación es necesario que te crees una cuenta.
-            La autenticación se hará mediante tokens que se envían por correo.
+            You need an account to work with this application. Authentication uses sign-in links
+            sent by email — there is no password to remember.
         </div>
-        <p>Indica tu correo electrónico y te enviaremos un enlace de acceso.</p>
+        <p>Enter your email address and we will send you a sign-in link.</p>
         <form method="POST" class="text-center mx-auto" style="max-width: 320px;">
             {% csrf_token %}
             {% bootstrap_form form show_label=False %}
-            {% bootstrap_button button_type="submit" content="Enviar enlace de acceso" %}
+            {% bootstrap_button button_type="submit" content="Send sign-in link" %}
         </form>
     </div>
 </div>

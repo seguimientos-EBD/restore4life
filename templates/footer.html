@@ -1,19 +1,11 @@
 {% load static %}
 
-<footer class="footer mt-3">
+<footer class="footer mt-4">
     <div class="container-xxl">
-        <p>Financiación: </p>
-        <div class="row align-items-center justify-content-center">
-            <div class="col-4 col-lg-2 my-2"><a target="_blank" href="https://www.ciencia.gob.es/"><img src="{% static 'img/ciencia.png' %}" alt="Ministerio de ciencia innovación y universidades" class="img-fluid"></a></div>
-            <div class="col-4 col-lg-2 my-2"><a target="_blank" href="https://www.ciencia.gob.es/Organismos-y-Centros/ICTS.html"><img src="{% static 'img/ICTS.png' %}" alt="ICTS" class="img-fluid"></a></div>
-            <div class="col-4 col-lg-2 my-2"><a href="https://next-generation-eu.europa.eu/index_es"><img src="{% static 'img/logo_ue.png' %}" alt="NextGenerationEU" class="img-fluid"></a></div>
-            <div class="col-4 col-lg-2 my-2"><a href="https://planderecuperacion.gob.es/"><img src="{% static 'img/logo_recuperacion.png' %}" alt="Plan de Recuperación, Transformación y Resiliencia" class="img-fluid"></a></div>
-            <div class="col-4 col-lg-2 my-2"><img class="img-fluid" src="{% static 'img/logo_penelope.png' %}" width="2300" alt="Proyecto PENELOPE"></div>
-            <div class="w-100 d-none d-lg-block"></div>
-            <div class="col-4 col-lg-2 mx-auto my-2"><a target="_blank" href="https://www.miteco.gob.es/"><img src="{% static 'img/MITECO.png' %}" alt="Ministerio de transición ecológica y el reto demográfico" class="img-fluid"></a></div>
-            <div class="col-4 col-lg-2 mx-auto my-2"><a target="_blank" href="https://www.miteco.gob.es/es/ministerio/planes-estrategias/marco-actuaciones-donana.html"><img src="{% static 'img/MAD.png' %}" alt="Marco de actuaciones para Doñana" class="img-fluid"></a></div>
-            <div class="col-4 col-lg-2 mx-auto my-2"><a href="https://www.juntadeandalucia.es/"><img src="{% static 'img/junta.png' %}" alt="Junta de Andalucía" class="img-fluid"></a></div>
-            <div class="col-4 col-lg-2 mx-auto my-2"><a target="_blank" href="https://www.aei.gob.es/ayudas-concedidas/centros-unidades-excelencia/"><img src="{% static 'img/severo.jpg' %}" alt="Excelencia Severo Ochoa" class="img-fluid"></a></div>
-        </div>
+        <p class="small text-muted text-center mb-0">
+            Hydroperiod analysis powered by <a href="https://github.com/Digdgeo/Ndvi2Gif" target="_blank" rel="noopener">ndvi2gif</a>
+            on Google Earth Engine · <a href="https://restore4life.eu" target="_blank" rel="noopener">restore4life.eu</a>
+            · <a href="{% url 'citation' %}">How to cite</a>
+        </p>
     </div>
 </footer>

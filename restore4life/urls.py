@@ -7,8 +7,8 @@ from generic import urls as generic_urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('earthengine/', include('earthengine.urls')),
-    path('ambitos/', include('ambitos.urls')),
-    path('hidroperiodo/', include('hidroperiodo.urls')),
+    path('areas/', include('areas.urls')),
+    path('hydroperiod/', include('hydroperiod.urls')),
     path('', include(generic_urls)),
 ]
 

@@ -1,37 +1,283 @@
+// Restore4Life visual identity.
+//
+// The palette and typefaces are those of the project site (restore4life.eu), taken
+// from its Elementor global kit: teal-slate primary, pale green surface, charcoal for
+// text and chrome, and a family of muted greens for the accents.
+//
+// The fonts are self-hosted on purpose: pulling them from the Google Fonts CDN leaks
+// every visitor's IP to a third country, which is exactly what an EU-funded project
+// should not be doing. Both files are variable fonts, so one per subset covers every
+// weight.
+
+// --------------------------------------------------------------------------- //
+// Brand palette                                                                //
+// --------------------------------------------------------------------------- //
+
+$r4l-teal:        #51727C;  // primary
+$r4l-teal-deep:   #4D6D76;
+$r4l-pale-green:  #EAF2EB;  // secondary / surface
+$r4l-charcoal:    #3B4042;  // accent / text
+$r4l-green:       #729277;
+$r4l-green-mid:   #6C8A71;
+$r4l-green-light: #799A7E;
+$r4l-green-deep:  #5E7761;
+$r4l-grey:        #737373;
+
+// Warning and danger have no brand equivalent: these are picked to sit alongside the
+// greens without shouting over them.
+$r4l-amber:       #C08A3E;
+$r4l-brick:       #A34A48;
+
 $white: #ffffff;
-$primary: #efa125;
+$primary: $r4l-teal;
+
+// --------------------------------------------------------------------------- //
+// Typography                                                                   //
+// --------------------------------------------------------------------------- //
 
 @font-face {
-  font-family: 'Ubuntu';
+  font-family: 'DM Sans';
   font-style: normal;
-  font-weight: 400;
-  src: url("../fonts/ubuntu.woff2") format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fonts/dm-sans-latin.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fonts/dm-sans-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Comfortaa';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fonts/comfortaa-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Comfortaa';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fonts/comfortaa-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+$font-family-sans-serif: 'DM Sans', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+$headings-font-family: 'Comfortaa', $font-family-sans-serif;
+$headings-font-weight: 600;
+
+// --------------------------------------------------------------------------- //
+// Bootstrap overrides                                                          //
+// --------------------------------------------------------------------------- //
+
 $theme-colors: (
-    "light":      #e5e5e6,
-    "dark":       #2e0e1a,
-    "primary":    #efa125,
-    "secondary":  #1d1d1b,
-    "info":       #efa125,
-    "success":    #52a90f,
-    "warning":    #ffc159,
-    "danger":     #f30660,
+    "light":      $r4l-pale-green,
+    "dark":       $r4l-charcoal,
+    "primary":    $r4l-teal,
+    "secondary":  $r4l-green-mid,
+    "info":       $r4l-teal-deep,
+    "success":    $r4l-green,
+    "warning":    $r4l-amber,
+    "danger":     $r4l-brick,
 );
 
-$link-color: #000;
+$body-color: $r4l-charcoal;
+$link-color: $r4l-teal;
+$link-hover-color: $r4l-teal-deep;
+$border-radius: .375rem;
 
 $bootstrap-icons-font-src: url("../bootstrap-icons/font/fonts/bootstrap-icons.woff2") format("woff2"), url("../bootstrap-icons/font/fonts/bootstrap-icons.woff") format("woff");
 @import "node_modules/node_modules/bootstrap/scss/bootstrap";
 @import "node_modules/node_modules/bootstrap-icons/font/bootstrap-icons.scss";
 @import "../jquery-ui/dist/themes/base/jquery-ui.css";
-@import "../jquery-ui/dist/themes/base/jquery-ui.css";
 @import "../leaflet/dist/leaflet.css";
 @import "../leaflet.fullscreen/Control.FullScreen.css";
+@import "../leaflet-draw/dist/leaflet.draw.css";
 
+// --------------------------------------------------------------------------- //
+// Layout                                                                       //
+// --------------------------------------------------------------------------- //
 
 html, body {
     height: 100%;
-    font-family: Ubuntu;
+}
+
+body {
+    font-family: $font-family-sans-serif;
+}
+
+// The project site leads with a dark band carrying the white logotype; the partner
+// logos sit below it on a pale green field so they read without competing.
+.brand-header {
+    background-color: $r4l-charcoal;
+
+    .brand-logo {
+        height: 68px;
+        width: auto;
+    }
+
+    .brand-subtitle {
+        font-size: 1.15rem;
+        color: rgba($white, .75);
+    }
+
+    .brand-tagline {
+        font-size: 1.05rem;
+        color: rgba($white, .75);
+    }
+
+    a {
+        color: $white;
+        text-decoration: none;
+    }
+}
+
+.partner-strip {
+    background-color: $r4l-pale-green;
+    border-bottom: 1px solid rgba($r4l-charcoal, .1);
+
+    img {
+        height: 64px;
+        width: auto;
+    }
+
+    // A square mark reads smaller than a wide one at the same height, because the eye
+    // compares area rather than height. This gives it back the weight it loses.
+    .logo-square {
+        height: 92px;
+    }
+}
+
+.navbar {
+    background-color: $r4l-teal;
+
+    .nav-link {
+        color: rgba($white, .85);
+        font-size: 1.075rem;
+
+        &:hover, &:focus {
+            color: $white;
+        }
+    }
+
+    .navbar-toggler {
+        border-color: rgba($white, .4);
+    }
+
+    .navbar-toggler-icon {
+        filter: invert(1) grayscale(1) brightness(2);
+    }
+}
+
+// Referenced from the navbar: a underline that grows on hover rather than snapping in.
+.custom-underline {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: .5rem;
+        right: .5rem;
+        bottom: .15rem;
+        height: 2px;
+        background-color: currentColor;
+        transform: scaleX(0);
+        transition: transform .18s ease-in-out;
+    }
+
+    &:hover::after, &:focus::after {
+        transform: scaleX(1);
+    }
+}
+
+.footer {
+    background-color: $r4l-pale-green;
+    border-top: 1px solid rgba($r4l-charcoal, .1);
+    padding: 1.5rem 0;
+}
+
+// --------------------------------------------------------------------------- //
+// Study areas and hydroperiod panel                                            //
+// --------------------------------------------------------------------------- //
+
+.study-area-thumbnail {
+    background-color: $r4l-pale-green;
+}
+
+.hydroperiod-panel {
+    border-color: rgba($r4l-teal, .25);
+
+    .nav-tabs .nav-link.active {
+        border-bottom-color: $white;
+        color: $r4l-teal;
+        font-weight: 600;
+    }
+
+    h3 {
+        font-family: $font-family-sans-serif;
+        letter-spacing: .04em;
+    }
+}
+
+// The computation log is a transcript, so it stays monospaced and quiet.
+.hydroperiod-log {
+    height: 17rem;
+    overflow-y: auto;
+    background-color: $r4l-pale-green;
+}
+
+.hydroperiod-layer {
+    border-color: rgba($r4l-teal, .25);
+}
+
+// The value reader sits with the other map tools, so it borrows Leaflet's own button
+// look rather than Bootstrap's — a lone Bootstrap button among Leaflet ones reads as
+// something that fell out of the page.
+.map-inspect-control a {
+    font-size: 1.05rem;
+    line-height: 30px;
+    text-align: center;
+    color: $r4l-charcoal;
+
+    &.active {
+        background-color: $r4l-teal;
+        color: $white;
+    }
+}
+
+// While inspecting, the pointer stops meaning "pan the map" and starts meaning "read
+// the value here", so it says so.
+.map-inspecting {
+    cursor: crosshair;
+
+    .leaflet-interactive {
+        cursor: crosshair;
+    }
+}
+
+// A stats run can return a thousand rows, so the table scrolls inside its own card
+// rather than pushing the map off the screen.
+.hydroperiod-stats {
+    border-color: rgba($r4l-teal, .25);
+
+    .js-stats-table {
+        max-height: 26rem;
+        overflow-y: auto;
+    }
+
+    thead th {
+        position: sticky;
+        top: 0;
+        background-color: $r4l-pale-green;
+        white-space: nowrap;
+    }
 }

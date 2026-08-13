@@ -1,16 +1,17 @@
-<!-- templates/registration/token_sent.html -->
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Check your inbox — Restore4Life{% endblock %}
+
 {% block content %}
 <div class="row text-center">
-    <div class="col-4 mx-auto">
-        <img class="my-5 img-fluid w-50" src="{% static 'img/logo_icts_donana.png' %}" >
+    <div class="col-lg-5 mx-auto">
+        <img class="my-4 img-fluid" style="max-width: 110px;" src="{% static 'img/restore4life_mark.png' %}" alt="">
         <div class="alert alert-success" role="alert">
-            Te hemos enviado un enlace de acceso a <strong>{{ email }}</strong>.
-            Revisa tu bandeja de entrada (y la carpeta de spam) para continuar.
+            We have sent a sign-in link to <strong>{{ email }}</strong>.
+            Check your inbox (and your spam folder) to continue.
         </div>
-        <a href="{% url 'login' %}">Volver</a>
+        <a href="{% url 'login' %}">Back</a>
     </div>
 </div>
 {% endblock %}

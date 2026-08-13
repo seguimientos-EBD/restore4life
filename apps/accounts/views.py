@@ -13,9 +13,6 @@ from accounts.models import LoginToken
 User = get_user_model()
 
 
-
-
-
 class RequestTokenView(View):
     template_name = 'registration/login.html'
     mode = 'login'
@@ -37,7 +34,7 @@ class RequestTokenView(View):
         token = LoginToken.objects.create(user=user)
         token_url = request.build_absolute_uri(reverse('token-login', args=[token.token]))
         send_mail(
-            subject='Tu enlace de acceso a Restore4Life',
+            subject='Your Restore4Life sign-in link',
             message=render_to_string('accounts/email/token_email.txt', {
                 'token_url': token_url,
                 'minutes': settings.LOGIN_TOKEN_LIFETIME_MINUTES,
@@ -55,10 +52,10 @@ class TokenLoginView(View):
     def get(self, request, token):
         login_token = LoginToken.objects.filter(token=token).select_related('user').first()
         if not login_token or not login_token.is_valid():
-            messages.error(request, 'El enlace de acceso no es válido o ha caducado. Solicita uno nuevo.')
+            messages.error(request, 'That sign-in link is invalid or has expired. Request a new one.')
             return redirect('login')
 
         login_token.mark_used()
         login(request, login_token.user, backend='django.contrib.auth.backends.ModelBackend')
-        messages.success(request, 'Has iniciado sesión correctamente.')
+        messages.success(request, 'You are now signed in.')
         return redirect(settings.LOGIN_REDIRECT_URL)

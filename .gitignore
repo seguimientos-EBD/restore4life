@@ -150,3 +150,8 @@ node_modules/
 
 
 
+
+# Local dev: compiled static output
+staticfiles/
+node_modules/
+media/

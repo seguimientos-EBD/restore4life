@@ -15,8 +15,8 @@ def credentials_for_user(user):
     except EarthEngineAccount.DoesNotExist:
         raise NotConnected(f'{user} has no Earth Engine account connected')
 
-    # El cliente OAuth que emitió el token es efímero (flujo 'notebook'), así que hay
-    # que refrescar con ese y no con el estático de ee.
+    # The OAuth client that issued the token is ephemeral ('notebook' flow), so the
+    # refresh must go through that one and not ee's static client.
     return account, Credentials(
         None,
         refresh_token=account.refresh_token,

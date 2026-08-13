@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}How to cite — Restore4Life{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-9">
+        <h2 class="h4 mb-4">How to cite</h2>
+
+        <p>If you use data or figures produced with this application, please cite both the
+        application and the computation library behind it.</p>
+
+        <h3 class="h6 mt-4">This application</h3>
+        <div class="alert alert-light border" role="alert">
+            ICTS-Doñana ({% now "Y" %}). <em>Restore4Life — Danube Wetlands HydroApp</em>: hydroperiod
+            analysis of Danube basin wetlands. Estación Biológica de Doñana (EBD-CSIC).
+            {{ request.scheme }}://{{ request.get_host }}. Accessed {% now "Y-m-d" %}.
+        </div>
+
+        <h3 class="h6 mt-4">The computation library</h3>
+        <div class="alert alert-light border" role="alert">
+            García Díaz, D. <em>ndvi2gif</em>: seasonal vegetation and hydroperiod analysis on Google
+            Earth Engine. <a href="https://github.com/Digdgeo/Ndvi2Gif" target="_blank" rel="noopener">https://github.com/Digdgeo/Ndvi2Gif</a>
+        </div>
+
+        <h3 class="h6 mt-4">Underlying data</h3>
+        <p>Results derive from Copernicus Sentinel-2, USGS/NASA Landsat or NASA MODIS imagery, and —
+        for the topographic wetness index — from MERIT Hydro and NASADEM. Each carries its own
+        attribution requirements, which apply in addition to the above.</p>
+
+        <h3 class="h6 mt-4">Licence</h3>
+        <p>Commercial use of the data and any derived products is permitted, but their distribution
+        must carry the same licence as the original data, and the source must always be cited.</p>
+
+        <p class="mb-1"><strong>Source:</strong> ICTS Doñana — Singular Scientific and Technical
+        Infrastructure, Doñana Biological Reserve.</p>
+        <p><strong>Funding:</strong> PENELOPE project, "Adding value to the Doñana e-infrastructure for
+        long-term monitoring of natural processes". Ministry of Science and Innovation, Government of
+        Spain. Recovery, Transformation and Resilience Plan funds — PRTR, funded by the European
+        Union — NextGenerationEU.</p>
+
+        <p class="small text-muted">
+            <a href="https://icts-donana.csic.es" target="_blank" rel="noopener">ICTS Doñana</a> © {% now "Y" %}
+            is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>
+            <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">
+            <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">
+            <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" alt="" style="max-width: 1em; max-height: 1em; margin-left: .2em;">
+        </p>
+    </div>
+</div>
+{% endblock %}

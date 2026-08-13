@@ -4,9 +4,9 @@ from django.utils.html import format_html
 
 class ConnectForm(forms.Form):
     ee_project = forms.CharField(
-        label='ID de proyecto de Google Cloud',
+        label='Google Cloud project ID',
         help_text=format_html(
-            'Un proyecto propio con la Earth Engine API habilitada '
+            'A project of your own with the Earth Engine API enabled '
             '(<a href="https://code.earthengine.google.com/register" target="_blank" rel="noopener">'
             'code.earthengine.google.com/register</a>).',
         ),
@@ -14,4 +14,4 @@ class ConnectForm(forms.Form):
 
 
 class AuthorizeForm(forms.Form):
-    auth_code = forms.CharField(label='Código de autorización')
+    auth_code = forms.CharField(label='Authorization code')

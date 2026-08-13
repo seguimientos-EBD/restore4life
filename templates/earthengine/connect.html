@@ -2,35 +2,40 @@
 {% load static %}
 {% load django_bootstrap5 %}
 
+{% block title %}Earth Engine — Restore4Life{% endblock %}
+
 {% block content %}
 <div class="row">
-    <div class="col-10 mx-auto text-center">
+    <div class="col-lg-8 mx-auto text-center">
         <img src="{% static 'img/earth_engine_icon.png' %}" alt="Google Earth Engine" height="80" class="d-block mx-auto mb-4">
         {% if account %}
-            <p class="text-center">Conectado como proyecto <strong>{{ account.ee_project }}</strong>.</p>
+            <p>Connected with project <strong>{{ account.ee_project }}</strong>.</p>
             <form method="post" action="{% url 'earthengine:disconnect' %}">
                 {% csrf_token %}
-                {% bootstrap_button button_type="submit" content="Desconectar" button_class="btn-outline-danger" %}
+                {% bootstrap_button button_type="submit" content="Disconnect" button_class="btn-outline-danger" %}
             </form>
 
         {% elif auth_url %}
 
             <div class="alert alert-info text-center" role="alert">
-                <p>Abre el siguiente enlace, autoriza el acceso con tu cuenta de Google y pega aquí el código de autorización que te muestre la página.</p>
+                <p>Open the link below, authorize access with your Google account, and paste back here the
+                authorization code the page shows you.</p>
                 <p><a href="{{ auth_url }}" target="_blank" rel="noopener">{{ auth_url }}</a></p>
-                <p class="mb-0"><strong>Nota:</strong> este proceso solo funciona correctamente en navegadores basados en Chromium, como Google Chrome o Brave.</p>
+                <p class="mb-0"><strong>Note:</strong> this process only works properly in Chromium-based
+                browsers, such as Google Chrome or Brave.</p>
             </div>
             <form method="post" action="{% url 'earthengine:authorize' %}">
                 {% csrf_token %}
                 {% bootstrap_form authorize_form %}
-                {% bootstrap_button button_type="submit" content="Conectar" %}
+                {% bootstrap_button button_type="submit" content="Connect" %}
             </form>
         {% else %}
-            <p class="text-center">Conecta tu propia cuenta de Google Earth Engine indicando el proyecto de Google Cloud con la Earth Engine API habilitada.</p>
+            <p>Connect your own Google Earth Engine account by giving the Google Cloud project that has
+            the Earth Engine API enabled.</p>
             <form method="post" action="{% url 'earthengine:connect' %}">
                 {% csrf_token %}
                 {% bootstrap_form form %}
-                {% bootstrap_button button_type="submit" content="Iniciar conexión" %}
+                {% bootstrap_button button_type="submit" content="Start connection" %}
             </form>
         {% endif %}
     </div>

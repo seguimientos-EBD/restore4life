@@ -16,7 +16,7 @@ class UserManager(BaseUserManager):
 
     def _create_user(self, email, password, **extra_fields):
         if not email:
-            raise ValueError('El email es obligatorio')
+            raise ValueError('Email is required')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -32,9 +32,9 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         if extra_fields.get('is_staff') is not True:
-            raise ValueError('El superusuario debe tener is_staff=True.')
+            raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
-            raise ValueError('El superusuario debe tener is_superuser=True.')
+            raise ValueError('Superuser must have is_superuser=True.')
         return self._create_user(email, password, **extra_fields)
 
 
@@ -42,7 +42,7 @@ class User(AbstractUser):
     """Login is by email (magic link); there is no username."""
 
     username = None
-    email = models.EmailField('correo electrónico', unique=True)
+    email = models.EmailField('email address', unique=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -60,8 +60,8 @@ class LoginToken(models.Model):
     used_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        verbose_name = 'Token de acceso'
-        verbose_name_plural = 'Tokens de acceso'
+        verbose_name = 'Login token'
+        verbose_name_plural = 'Login tokens'
 
     def __str__(self):
         return f'{self.user} ({self.created_at:%Y-%m-%d %H:%M})'

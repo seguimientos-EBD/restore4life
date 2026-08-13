@@ -1,7 +1,7 @@
-Hola,
+Hello,
 
-Para acceder a Restore4Life pulsa en el siguiente enlace (caduca en {{ minutes }} minutos):
+To sign in to Restore4Life, follow the link below (it expires in {{ minutes }} minutes):
 
 {{ token_url }}
 
-Si no has solicitado este acceso, puedes ignorar este mensaje.
+If you did not request this, you can ignore this message.

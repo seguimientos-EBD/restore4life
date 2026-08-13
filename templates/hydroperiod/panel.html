@@ -1,0 +1,166 @@
+{% load django_bootstrap5 %}
+
+{% if not earthengine_account %}
+    <div class="alert alert-warning" role="alert">
+        <p class="mb-0">To compute layers you need to
+            <a href="{% url 'earthengine:connect' %}" class="alert-link">connect your Earth Engine account</a>.</p>
+    </div>
+{% else %}
+<form class="hydroperiod-panel card"
+      data-tiles-url="{% url 'hydroperiod:tiles' %}"
+      data-stats-url="{% url 'hydroperiod:stats' %}"
+      data-export-url="{% url 'hydroperiod:export' %}"
+      data-inspect-url="{% url 'hydroperiod:inspect' %}">
+    {% csrf_token %}
+    {# Filled by the map when a shape is drawn. The server prefers it over the dropdown. #}
+    <input type="hidden" name="geometry" value="">
+    {{ options|json_script:"hydroperiod-options" }}
+
+    <div class="card-body">
+        {# What it computes on | which product it draws | what has been going on. #}
+        <div class="row g-4">
+            <div class="col-lg-4">
+                {# By hand because it does not come from a form: the study area is a group of #}
+                {# wetlands and the computation runs on one of them, or on a drawn shape. #}
+                <div class="row mb-3">
+                    <label class="col-5 col-form-label-sm" for="id_wetland">Wetland</label>
+                    <div class="col-7">
+                        <select class="form-select form-select-sm js-wetland" id="id_wetland" name="wetland">
+                            <option value="">— Pick one, or draw on the map —</option>
+                            {% for wetland in wetlands %}
+                                <option value="{{ wetland.pk }}">
+                                    {{ wetland.name }}{% if wetland.country %} ({{ wetland.country }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <h3 class="h6 text-uppercase text-muted">Time series</h3>
+                {% bootstrap_field form_hydroperiod.sensor size="sm" layout="horizontal" %}
+                {% bootstrap_field form_hydroperiod.start_year size="sm" layout="horizontal" %}
+                {% bootstrap_field form_hydroperiod.end_year size="sm" layout="horizontal" %}
+                {% bootstrap_field form_hydroperiod.index size="sm" layout="horizontal" %}
+                {% bootstrap_field form_hydroperiod.threshold size="sm" layout="horizontal" %}
+                {% bootstrap_field form_hydroperiod.max_clouds size="sm" layout="horizontal" %}
+            </div>
+
+            <div class="col-lg-4">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#panel-hydroperiod"
+                                type="button" role="tab">Hydroperiod</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#panel-anomalies"
+                                type="button" role="tab">Anomalies</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#panel-twi"
+                                type="button" role="tab">TWI</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#panel-stats"
+                                type="button" role="tab">Stats</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#panel-export"
+                                type="button" role="tab">Export</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content border border-top-0 rounded-bottom p-3">
+                    <div class="tab-pane fade show active" id="panel-hydroperiod" role="tabpanel">
+                        {% bootstrap_field form_hydroperiod.band size="sm" layout="horizontal" %}
+                        {% bootstrap_field form_hydroperiod.year size="sm" layout="horizontal" wrapper_class="mb-3 js-cycle" %}
+                        <button type="button" class="btn btn-primary btn-sm js-show-layer" data-product="hydroperiod">
+                            <i class="bi bi-layers"></i> Add data
+                        </button>
+                    </div>
+
+                    <div class="tab-pane fade" id="panel-anomalies" role="tabpanel">
+                        <p class="small text-muted">Compares each cycle against a reference mean: days above
+                            (green) or below (red) it.</p>
+                        {% bootstrap_field form_anomalies.reference size="sm" layout="horizontal" %}
+                        {% bootstrap_field form_anomalies.layer size="sm" layout="horizontal" %}
+                        {% bootstrap_field form_anomalies.anomaly_year size="sm" layout="horizontal" wrapper_class="mb-3 js-cycle" %}
+                        <button type="button" class="btn btn-primary btn-sm js-show-layer" data-product="anomalies">
+                            <i class="bi bi-layers"></i> Add data
+                        </button>
+                    </div>
+
+                    <div class="tab-pane fade" id="panel-twi" role="tabpanel">
+                        <p class="small text-muted">Topographic wetness index, from the terrain alone: it uses
+                            neither the sensor nor the period next to it. The 30 m hybrid sharpens the slope, but
+                            the flow accumulation is still 90 m.</p>
+                        {% bootstrap_field form_twi.dem_source size="sm" layout="horizontal" %}
+                        <button type="button" class="btn btn-primary btn-sm js-show-layer" data-product="twi">
+                            <i class="bi bi-layers"></i> Add data
+                        </button>
+                    </div>
+
+                    <div class="tab-pane fade" id="panel-stats" role="tabpanel">
+                        <p class="small text-muted">Measures the product selected in the tab you came from,
+                            over points or polygons of your own. Points give the pixel value; polygons give
+                            mean, median, min, max, standard deviation and pixel count.</p>
+                        {% bootstrap_field form_stats.geometries size="sm" layout="horizontal" %}
+                        {% bootstrap_field form_stats.scale size="sm" layout="horizontal" %}
+                        <div class="row mb-3">
+                            <label class="col-5 col-form-label-sm" for="id_stats_product">Measure</label>
+                            <div class="col-7">
+                                <select class="form-select form-select-sm js-stats-product" id="id_stats_product">
+                                    <option value="hydroperiod">Hydroperiod tab layer</option>
+                                    <option value="anomalies">Anomalies tab layer</option>
+                                    <option value="twi">TWI</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-primary btn-sm js-compute-stats">
+                                <i class="bi bi-table"></i> Compute stats
+                            </button>
+                            {# Above a thousand features the wait is not worth it, so the same #}
+                            {# computation goes to Drive as a CSV instead. #}
+                            <button type="button" class="btn btn-outline-primary btn-sm js-stats-to-drive">
+                                <i class="bi bi-cloud-arrow-up"></i> Send to Drive
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="panel-export" role="tabpanel">
+                        <p class="small text-muted">Starts the export on your own Earth Engine account. The
+                            tasks are queued and run on Earth Engine's time: the files appear in Drive later,
+                            and progress is followed from the Earth Engine task manager.</p>
+                        {% bootstrap_field form_export.target size="sm" layout="horizontal" %}
+                        {% bootstrap_field form_export.folder size="sm" layout="horizontal" %}
+                        {% bootstrap_field form_export.export_scale size="sm" layout="horizontal" %}
+                        <div class="row mb-3 js-export-product-row">
+                            <label class="col-5 col-form-label-sm" for="id_export_product">Product</label>
+                            <div class="col-7">
+                                <select class="form-select form-select-sm js-export-product" id="id_export_product">
+                                    <option value="hydroperiod">Hydroperiod tab layer</option>
+                                    <option value="anomalies">Anomalies tab layer</option>
+                                    <option value="twi">TWI</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm js-start-export">
+                            <i class="bi bi-cloud-arrow-up"></i> Start export
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {# The computation log: in the notebook app this was printed to the console. #}
+            <div class="col-lg-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h3 class="h6 text-uppercase text-muted mb-0">Log</h3>
+                    <button type="button" class="btn btn-link btn-sm p-0 text-muted js-clear-log">Clear</button>
+                </div>
+                <ol class="hydroperiod-log js-log list-unstyled small font-monospace border rounded p-2 mb-0"
+                    aria-live="polite"></ol>
+            </div>
+        </div>
+    </div>
+</form>
+{% endif %}

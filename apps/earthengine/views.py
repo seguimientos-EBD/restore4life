@@ -49,7 +49,7 @@ class AuthorizeView(LoginRequiredMixin, View):
         code_verifier = request.session.get(SESSION_CODE_VERIFIER)
         ee_project = request.session.get(SESSION_EE_PROJECT)
         if not code_verifier or not ee_project:
-            messages.error(request, 'La conexión con Earth Engine ha caducado, empieza de nuevo.')
+            messages.error(request, 'The Earth Engine connection has expired, start again.')
             return redirect('earthengine:connect')
 
         form = AuthorizeForm(request.POST)
@@ -59,8 +59,8 @@ class AuthorizeView(LoginRequiredMixin, View):
                     form.cleaned_data['auth_code'], code_verifier,
                 )
             except Exception:
-                logger.exception('Error canjeando el código de autorización de Earth Engine')
-                messages.error(request, 'El código de autorización no es válido o ha caducado.')
+                logger.exception('Error exchanging the Earth Engine authorization code')
+                messages.error(request, 'That authorization code is invalid or has expired.')
             else:
                 account, _ = EarthEngineAccount.objects.get_or_create(user=request.user)
                 account.ee_project = ee_project
@@ -70,7 +70,7 @@ class AuthorizeView(LoginRequiredMixin, View):
                 account.save()
                 del request.session[SESSION_CODE_VERIFIER]
                 del request.session[SESSION_EE_PROJECT]
-                messages.success(request, 'Cuenta de Earth Engine conectada.')
+                messages.success(request, 'Earth Engine account connected.')
                 return redirect('index')
 
         auth_url, code_verifier = oauth.build_authorization_url()
@@ -81,5 +81,5 @@ class AuthorizeView(LoginRequiredMixin, View):
 class DisconnectView(LoginRequiredMixin, View):
     def post(self, request):
         EarthEngineAccount.objects.filter(user=request.user).delete()
-        messages.success(request, 'Cuenta de Earth Engine desconectada.')
+        messages.success(request, 'Earth Engine account disconnected.')
         return redirect('earthengine:connect')

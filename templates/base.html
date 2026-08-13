@@ -1,11 +1,12 @@
 {% load static sass_tags %}
 
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="origin">
-    <title>ICTS Doñana - Laboratorio vivo - Restore4Life</title>
+    <title>{% block title %}Restore4Life — Danube Wetlands HydroApp{% endblock %}</title>
     <link rel="stylesheet" href="{% sass_src 'css/restore.scss' %}" />
     <link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.ico' %}" />
     {% block head %}{% endblock %}
@@ -13,13 +14,13 @@
     {% include 'js_imports.html' %}
 </head>
 
-<body class="mb-5">
+<body class="d-flex flex-column min-vh-100">
     {% include "navbar.html" %}
-    <div class="{% block tamaño_container %}container-xxl{% endblock tamaño_container %} pt-2">
+    <main class="{% block container_size %}container-xxl{% endblock container_size %} pt-3 flex-grow-1">
         {% block content %}{% endblock content %}
         {% include "messages.html" %}
-        {% include "footer.html" %}
-    </div>
+    </main>
+    {% include "footer.html" %}
     {% include "init_pills.html" %}
 </body>
 </html>
