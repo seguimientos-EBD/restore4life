@@ -21,7 +21,6 @@ ON_PROD = True if config('DJANGO_CONFIGURATION') == 'Prod' else False
 CREATE_DEFAULT_ADMIN = config('CREATE_DEFAULT_ADMIN', default=False, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
 CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="http://localhost,http://127.0.0.1", cast=Csv())
-
 EE_TOKEN_ENCRYPTION_KEY = config('EE_TOKEN_ENCRYPTION_KEY')
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -33,16 +32,6 @@ LOGOUT_REDIRECT_URL = "/"
 # Passwordless (magic-link) authentication
 LOGIN_TOKEN_LIFETIME_MINUTES = config('LOGIN_TOKEN_LIFETIME_MINUTES', default=30, cast=int)
 LOGIN_TOKEN_LIFETIME = timedelta(minutes=LOGIN_TOKEN_LIFETIME_MINUTES)
-
-# Email (magic-link delivery). Defaults to printing to the console in DEV;
-# set EMAIL_BACKEND (and the EMAIL_HOST_* vars) in .env for real delivery.
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='no-reply@restore4life.local')
 
 # Application definition
 
@@ -166,7 +155,15 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 if ON_PROD:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='no-reply@restore4life.local')
+    EMAIL_HOST = config('EMAIL_HOST', default='')
+    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     SECURE_HSTS_SECONDS = 31536000
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
