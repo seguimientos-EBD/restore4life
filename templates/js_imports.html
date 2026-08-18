@@ -1,4 +1,4 @@
-{% load static %}
+{% load static assets %}
 
 <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
 <script src="{% static 'jquery-ui/dist/jquery-ui.min.js' %}"></script>
@@ -6,5 +6,7 @@
 <script src="{% static 'leaflet/dist/leaflet.js' %}"></script>
 <script src="{% static 'leaflet.fullscreen/Control.FullScreen.js' %}"></script>
 <script src="{% static 'leaflet-draw/dist/leaflet.draw.js' %}"></script>
-<script src="{% static 'js/areas.js' %}"></script>
-<script src="{% static 'js/hydroperiod.js' %}"></script>
+{# Ours, and the only ones that change from one visit to the next: the modification #}
+{# time keeps a browser from pairing new markup with a script it cached earlier. #}
+<script src="{% static 'js/areas.js' %}?v={% asset_mtime 'js/areas.js' %}"></script>
+<script src="{% static 'js/hydroperiod.js' %}?v={% asset_mtime 'js/hydroperiod.js' %}"></script>

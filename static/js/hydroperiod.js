@@ -5,7 +5,7 @@
  * layer is on the map and which options make sense for the chosen sensor.
  */
 
-const HYDRO = {map: null, layer: null, layers: [], inspecting: false};
+const HYDRO = {map: null, layer: null, layers: [], inspecting: false, compare: null, lastId: 0};
 const HYDRO_PRODUCTS = {hydroperiod: 'the hydroperiod', anomalies: 'the anomalies', twi: 'the TWI'};
 
 /* Sentinel-2 cannot see before 2017 and MODIS does not compute every index: the valid
@@ -123,8 +123,16 @@ function hydroRemoveLayer() {
     if (!HYDRO.layer) {
         return;
     }
+    /* Half a curtain is not a comparison, and the clip has to come off while the layer
+       still has a container to take it off. */
+    if (HYDRO.compare &&
+        (HYDRO.layer === HYDRO.compare.left.layer || HYDRO.layer === HYDRO.compare.right.layer)) {
+        hydroStopCompare(true);
+        hydroLog('Curtain off: one of the two layers was removed.');
+    }
     removeOverlay(HYDRO.layer);
     HYDRO.layers = HYDRO.layers.filter(function(entry) { return entry.layer !== HYDRO.layer; });
+    hydroRefreshCompare();
 
     const previous = HYDRO.layers[HYDRO.layers.length - 1];
     HYDRO.layer = previous ? previous.layer : null;
@@ -136,10 +144,12 @@ function hydroRemoveLayer() {
 }
 
 function hydroRemoveAllLayers() {
+    hydroStopCompare(true);
     HYDRO.layers.forEach(function(entry) { removeOverlay(entry.layer); });
     HYDRO.layers = [];
     HYDRO.layer = null;
     document.querySelector('.hydroperiod-layer').classList.add('d-none');
+    hydroRefreshCompare();
 }
 
 function hydroShowLayerBar(name, legend, opacity) {
@@ -164,12 +174,17 @@ function hydroAddLayer(data, parameters) {
 
     /* The parameters are kept with the layer so the inspector can rebuild exactly this
        image later, rather than whatever the panel happens to have selected by then. */
-    HYDRO.layers.push({
-        layer: layer, name: name, base: data.name, legend: data.legend, parameters: parameters,
-    });
+    /* An id of its own rather than its position: the comparison dropdowns hold a
+       reference to a layer that has to survive other layers being removed under it. */
+    const entry = {
+        id: ++HYDRO.lastId, layer: layer, name: name, base: data.name,
+        legend: data.legend, parameters: parameters,
+    };
+    HYDRO.layers.push(entry);
     HYDRO.layer = layer;
     hydroShowLayerBar(name, data.legend, 0.8);
-    return name;
+    hydroRefreshCompare();
+    return entry;
 }
 
 function hydroCurrentEntry() {
@@ -240,6 +255,8 @@ function hydroJson(request) {
 }
 
 function hydroBusy(form, busy) {
+    /* The comparison button is not in here: it does not reach Earth Engine, and whether
+       it can be pressed depends on how many layers there are, which is not this to say. */
     form.querySelectorAll(
         '.js-show-layer, .js-compute-stats, .js-stats-to-drive, .js-start-export',
     ).forEach(function(b) {
@@ -292,7 +309,7 @@ function hydroRequestLayer(form, button) {
         .then(function(data) {
             /* Hydroperiod products come masked to the pixels that ever held water:
                outside the area there is nothing to draw. */
-            hydroLog('Layer added: ' + hydroAddLayer(data, parameters.toString()) +
+            hydroLog('Layer added: ' + hydroAddLayer(data, parameters.toString()).name +
                 '. Toggle it from the switcher on the map.', 'ok');
         })
         .catch(function(error) {
@@ -301,6 +318,170 @@ function hydroRequestLayer(form, button) {
         .finally(function() {
             hydroBusy(form, false);
         });
+}
+
+/* --------------------------------------------------------------------------- *
+ * Comparing two cycles under a curtain                                         *
+ * --------------------------------------------------------------------------- */
+
+/* Both cycles are drawn over the whole map and each one is then clipped to its side of
+ * the divider. The rectangle is given in layer coordinates rather than screen ones,
+ * which is the system the tile containers are already positioned in: panning then moves
+ * the clip along with the tiles instead of against them. */
+function hydroClipCurtain() {
+    const compare = HYDRO.compare;
+    if (!compare) {
+        return;
+    }
+
+    const size = HYDRO.map.getSize();
+    const topLeft = HYDRO.map.containerPointToLayerPoint([0, 0]);
+    const bottomRight = HYDRO.map.containerPointToLayerPoint([size.x, size.y]);
+    const split = topLeft.x + size.x * compare.ratio;
+
+    compare.left.layer.getContainer().style.clip =
+        'rect(' + [topLeft.y, split, bottomRight.y, topLeft.x].join('px,') + 'px)';
+    compare.right.layer.getContainer().style.clip =
+        'rect(' + [topLeft.y, bottomRight.x, bottomRight.y, split].join('px,') + 'px)';
+    compare.divider.style.left = (size.x * compare.ratio) + 'px';
+}
+
+function hydroDragCurtain(event) {
+    if (!HYDRO.compare) {
+        return;
+    }
+    const point = event.touches ? event.touches[0] : event;
+    const box = HYDRO.map.getContainer().getBoundingClientRect();
+    HYDRO.compare.ratio = Math.min(1, Math.max(0, (point.clientX - box.left) / box.width));
+    hydroClipCurtain();
+}
+
+function hydroBuildDivider() {
+    const divider = L.DomUtil.create('div', 'map-curtain', HYDRO.map.getContainer());
+    divider.innerHTML = '<span class="map-curtain-grip"><i class="bi bi-arrows"></i></span>';
+    L.DomEvent.disableClickPropagation(divider);
+
+    const stop = function() {
+        document.removeEventListener('mousemove', hydroDragCurtain);
+        document.removeEventListener('touchmove', hydroDragCurtain);
+        document.removeEventListener('mouseup', stop);
+        document.removeEventListener('touchend', stop);
+        HYDRO.map.dragging.enable();
+    };
+    const start = function(event) {
+        event.preventDefault();
+        /* Without this the map pans underneath the divider being dragged. */
+        HYDRO.map.dragging.disable();
+        document.addEventListener('mousemove', hydroDragCurtain);
+        document.addEventListener('touchmove', hydroDragCurtain);
+        document.addEventListener('mouseup', stop);
+        document.addEventListener('touchend', stop);
+    };
+
+    divider.addEventListener('mousedown', start);
+    divider.addEventListener('touchstart', start);
+    return divider;
+}
+
+function hydroEntryById(id) {
+    return HYDRO.layers.find(function(entry) { return entry.id === Number(id); }) || null;
+}
+
+/* The two dropdowns list what is on the map right now, so the pair being compared can be
+ * a hydroperiod against its anomaly, two cycles of the same band, or the TWI against
+ * either — whatever has been computed. Below two layers there is nothing to compare, but
+ * the block stays on screen greyed out rather than hidden: something that only appears
+ * once you have already done the right thing is something nobody finds. */
+function hydroRefreshCompare() {
+    const block = document.querySelector('.hydroperiod-compare');
+    if (!block) {
+        return;
+    }
+
+    const enough = HYDRO.layers.length >= 2;
+    block.querySelector('.js-compare-hint').classList.toggle('d-none', enough);
+    block.querySelectorAll('.js-compare-left, .js-compare-right, .js-compare').forEach(
+        function(field) { field.disabled = !enough; });
+
+    ['.js-compare-left', '.js-compare-right'].forEach(function(selector, side) {
+        const select = block.querySelector(selector);
+        const previous = select.value;
+        select.replaceChildren();
+        HYDRO.layers.forEach(function(entry) {
+            select.add(new Option(entry.name, entry.id));
+        });
+
+        /* A choice of the user's is kept as long as its layer is still there. An
+           untouched dropdown keeps following the two most recent layers instead, one
+           each way round: left on the older, right on the newer. Preserving the value
+           there too would leave both ends on the first layer computed. */
+        if (select.dataset.chosen === '1' && hydroEntryById(previous)) {
+            select.value = previous;
+        } else if (HYDRO.layers.length) {
+            const fallback = HYDRO.layers[side ? HYDRO.layers.length - 1 : HYDRO.layers.length - 2];
+            select.value = (fallback || HYDRO.layers[0]).id;
+        }
+    });
+}
+
+function hydroStartCompare() {
+    const block = document.querySelector('.hydroperiod-compare');
+    const left = hydroEntryById(block.querySelector('.js-compare-left').value);
+    const right = hydroEntryById(block.querySelector('.js-compare-right').value);
+
+    if (!left || !right) {
+        hydroLog('Add two layers first: the comparison splits ones already on the map.', 'error');
+        return;
+    }
+    if (left === right) {
+        hydroLog('Pick two different layers: one against itself shows nothing.', 'error');
+        return;
+    }
+
+    /* Leaving the previous pair clipped would hide half of each of them for good. */
+    hydroStopCompare(true);
+
+    /* Either side may have been switched off from the layer switcher, and a comparison
+       against something invisible is just half a map. */
+    [left, right].forEach(function(entry) {
+        if (!HYDRO.map.hasLayer(entry.layer)) {
+            entry.layer.addTo(HYDRO.map);
+        }
+    });
+
+    HYDRO.compare = {left: left, right: right, ratio: 0.5, divider: hydroBuildDivider()};
+    HYDRO.map.on('move zoom zoomend resize', hydroClipCurtain);
+    hydroClipCurtain();
+    block.querySelector('.js-stop-compare').classList.remove('d-none');
+    hydroLog('Curtain on: "' + left.name + '" on the left, "' + right.name +
+        '" on the right. Drag the divider across the map.', 'ok');
+}
+
+/* Only the split is undone. The layers stay: they cost an Earth Engine computation
+ * each, and wanting them whole again is not wanting them gone. */
+function hydroStopCompare(quiet) {
+    const compare = HYDRO.compare;
+    if (!compare) {
+        return;
+    }
+
+    HYDRO.map.off('move zoom zoomend resize', hydroClipCurtain);
+    compare.divider.remove();
+    [compare.left, compare.right].forEach(function(entry) {
+        const container = entry.layer.getContainer();
+        if (container) {
+            container.style.clip = '';
+        }
+    });
+    HYDRO.compare = null;
+
+    const button = document.querySelector('.js-stop-compare');
+    if (button) {
+        button.classList.add('d-none');
+    }
+    if (!quiet) {
+        hydroLog('Curtain off. Both layers are still on the map.');
+    }
 }
 
 /* --------------------------------------------------------------------------- *
@@ -575,6 +756,7 @@ document.addEventListener('DOMContentLoaded', function() {
     hydroAdjustIndices(form, options);
     hydroAdjustYears(form, options);
     hydroAdjustCycles(form);
+    hydroRefreshCompare();
 
     hydroLog('Panel ready: pick a wetland to start.');
 
@@ -604,6 +786,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     form.querySelector('.js-clear-log').addEventListener('click', function() {
         form.querySelector('.js-log').replaceChildren();
+    });
+
+    form.querySelectorAll('.js-compare-left, .js-compare-right').forEach(function(select) {
+        select.addEventListener('change', function() { this.dataset.chosen = '1'; });
+    });
+    form.querySelector('.js-compare').addEventListener('click', function() {
+        hydroStartCompare();
+    });
+    form.querySelector('.js-stop-compare').addEventListener('click', function() {
+        hydroStopCompare(false);
     });
 
     form.querySelectorAll('.js-show-layer').forEach(function(button) {

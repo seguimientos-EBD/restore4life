@@ -179,6 +179,14 @@ function drawStudyArea(el, geojson, options, interactive) {
     const wetlands = L.geoJSON(geojson, {style: AREA_STYLE, onEachFeature: prepareWetland}).addTo(map);
     map.fitBounds(wetlands.getBounds(), {padding: [8, 8]});
 
+    /* Beside the panel the map is as tall as the panel is, and the panel grows and
+       shrinks on its own: blocks appear once there are layers to compare, the log fills
+       up, tabs of different heights come and go. Leaflet sizes itself once and would
+       otherwise leave the new strip blank, with no tiles in it. */
+    if (window.ResizeObserver) {
+        new ResizeObserver(function() { map.invalidateSize(false); }).observe(el);
+    }
+
     if (interactive) {
         R4L_MAP.map = map;
         R4L_MAP.wetlands = wetlands;

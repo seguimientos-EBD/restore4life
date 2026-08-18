@@ -11,7 +11,6 @@ whatever the map is showing without a product list of their own.
 """
 
 import logging
-import re
 from collections import namedtuple
 
 import ee
@@ -81,12 +80,6 @@ def _first_error(form):
     for errors in form.errors.values():
         return errors[0]
     return 'Invalid parameters.'
-
-
-def _task_name(*parts):
-    """Earth Engine only takes letters, digits, hyphens and underscores in a task name."""
-    joined = '_'.join(str(part) for part in parts if part)
-    return re.sub(r'[^A-Za-z0-9_-]+', '_', joined).strip('_')[:100]
 
 
 def ee_json(request, build, action):
@@ -245,7 +238,7 @@ class StatsView(ProductView):
 
             if stats_form.cleaned_data['to_drive']:
                 folder = stats_form.cleaned_data['folder']
-                description = _task_name('stats', product.name, product.label)
+                description = services.task_name('stats', product.name, product.label)
                 services.export_table(product.image, collection, scale, is_point, description, folder)
                 return {
                     'product': product.name, 'scale': scale, 'geometry': geometry,
@@ -320,6 +313,6 @@ class ExportView(ProductView):
     def export_product(self, request, folder, scale):
         """A single GeoTIFF of whatever product is selected — TWI, IRT, an anomaly or a band."""
         product = self.resolve_product(request)
-        description = _task_name(product.name, product.label)
+        description = services.task_name(product.name, product.label)
         services.export_image(product.image, product.roi, description, scale, folder)
         return {'folder': folder, 'scale': scale, 'tasks': [description]}

@@ -1,4 +1,4 @@
-{% load static sass_tags %}
+{% load static sass_tags assets %}
 
 <!doctype html>
 <html lang="en">
@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="origin">
     <title>{% block title %}Restore4Life — Danube Wetlands HydroApp{% endblock %}</title>
-    <link rel="stylesheet" href="{% sass_src 'css/restore.scss' %}" />
+    <link rel="stylesheet" href="{% sass_src 'css/restore.scss' %}?v={% asset_mtime 'css/restore.css' %}" />
     <link rel="shortcut icon" type="image/png" href="{% static 'img/favicon.ico' %}" />
     {% block head %}{% endblock %}
     {% include "matomo.html" %}

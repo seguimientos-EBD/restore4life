@@ -3,22 +3,55 @@
 
 {% block title %}{{ study_area.name }} — Restore4Life{% endblock %}
 
+{# The map is the work surface here, so this page takes the whole width rather than #}
+{# the centred column the rest of the site uses. #}
+{% block container_size %}container-fluid px-lg-4{% endblock container_size %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="h4 mb-0">{{ study_area.name }}</h2>
     <a href="{% url 'index' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
 </div>
 
-{# Computation controls on top (three columns), map full width below. #}
-<div class="mb-3">
-    {% hydroperiod_panel study_area %}
+{# Controls to the left, map to the right. Below xl the two stack and the panel goes #}
+{# back to spreading its own columns across the page. #}
+<div class="row g-3 area-workspace">
+    <div class="col-xl-5 col-xxl-4">
+        {% hydroperiod_panel study_area %}
+    </div>
+
+    {# A flex column so the map can take whatever height the panel beside it ends up #}
+    {# having: grid columns already stretch to the tallest one, this passes that height #}
+    {# down to the map instead of leaving it at the top of an empty column. #}
+    <div class="col-xl-7 col-xxl-8 d-flex flex-column">
+        {# The height proper lives in the stylesheet, which needs two of them. This floor #}
+        {# stays inline on purpose: the compiled CSS is served from a URL that never #}
+        {# changes, so a browser holding an older copy would give the map no height at #}
+        {# all and Leaflet would draw into a box zero pixels tall. #}
+        <div class="study-area-map border rounded" style="min-height: 24rem;"
+             data-geojson-url="{% url 'areas:geojson' study_area.pk %}"
+             {% if study_area.boundary %}data-boundary-url="{% url 'areas:boundary' study_area.pk %}"{% endif %}></div>
+
+        <div class="hydroperiod-layer card mt-2 d-none">
+            <div class="card-body py-2 d-flex align-items-center gap-3 flex-wrap">
+                <strong class="small js-name"></strong>
+                <div class="js-legend flex-grow-1" style="min-width: 12rem;"></div>
+                <label class="small text-muted mb-0">Opacity
+                    <input type="range" class="form-range js-opacity align-middle" style="width: 6rem;"
+                           min="0" max="1" step="0.05" value="0.8">
+                </label>
+                <button type="button" class="btn btn-sm btn-outline-secondary js-remove-layer">Remove</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary js-remove-all-layers">Remove all</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% comment %}
 Zonal statistics land here rather than inside their tab: a table with one row per
 feature needs the full width, and it outlives switching tabs.
 {% endcomment %}
-<div class="hydroperiod-stats card mb-3 d-none">
+<div class="hydroperiod-stats card my-3 d-none">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
             <h3 class="h6 mb-0 js-stats-caption"></h3>
@@ -30,22 +63,6 @@ feature needs the full width, and it outlives switching tabs.
             </div>
         </div>
         <div class="table-responsive js-stats-table"></div>
-    </div>
-</div>
-
-<div class="study-area-map border rounded" style="height: 60vh;" data-geojson-url="{% url 'areas:geojson' study_area.pk %}"
-     {% if study_area.boundary %}data-boundary-url="{% url 'areas:boundary' study_area.pk %}"{% endif %}></div>
-
-<div class="hydroperiod-layer card mt-2 d-none">
-    <div class="card-body py-2 d-flex align-items-center gap-3 flex-wrap">
-        <strong class="small js-name"></strong>
-        <div class="js-legend flex-grow-1" style="min-width: 12rem;"></div>
-        <label class="small text-muted mb-0">Opacity
-            <input type="range" class="form-range js-opacity align-middle" style="width: 6rem;"
-                   min="0" max="1" step="0.05" value="0.8">
-        </label>
-        <button type="button" class="btn btn-sm btn-outline-secondary js-remove-layer">Remove</button>
-        <button type="button" class="btn btn-sm btn-outline-secondary js-remove-all-layers">Remove all</button>
     </div>
 </div>
 {% endblock %}

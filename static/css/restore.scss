@@ -115,8 +115,9 @@ body {
     font-family: $font-family-sans-serif;
 }
 
-// The project site leads with a dark band carrying the white logotype; the partner
-// logos sit below it on a pale green field so they read without competing.
+// The project site leads with a dark band carrying the white logotype. Everything the
+// header has to say lives in that one band: identity on the left, the name of this
+// application in the middle, who runs it on the right.
 .brand-header {
     background-color: $r4l-charcoal;
 
@@ -125,14 +126,32 @@ body {
         width: auto;
     }
 
-    .brand-subtitle {
-        font-size: 1.15rem;
-        color: rgba($white, .75);
-    }
-
     .brand-tagline {
         font-size: 1.05rem;
         color: rgba($white, .75);
+    }
+
+    // The one piece of text on the page that names what this is, so it is allowed to
+    // be loud, and it borrows the pale green of the rule below to tie the two together.
+    .brand-appname {
+        font-family: $headings-font-family;
+        font-weight: 600;
+        font-size: clamp(1.5rem, 2.6vw, 2.6rem);
+        line-height: 1.15;
+        letter-spacing: .01em;
+        color: $r4l-pale-green;
+        flex: 0 0 auto;
+    }
+
+    // The identity is a good deal wider than the logos, so a middle block that simply
+    // took what they left over would sit right of centre. Giving both sides the same
+    // width puts the name on the centre line of the screen instead. Only from `lg`:
+    // below it the three stack and there are no sides to balance.
+    @include media-breakpoint-up(lg) {
+        .brand-side {
+            flex: 1 1 0;
+            min-width: 0;
+        }
     }
 
     a {
@@ -141,20 +160,34 @@ body {
     }
 }
 
-.partner-strip {
-    background-color: $r4l-pale-green;
-    border-bottom: 1px solid rgba($r4l-charcoal, .1);
+// On the pale green band these stood on their own. Against charcoal they need a field
+// of their own: two are opaque JPEGs that would otherwise read as floating white
+// rectangles, and the third is black lettering on transparency, which would disappear.
+.partner-logos {
+    background-color: $white;
+    border-radius: $border-radius;
+    padding: .35rem .6rem;
 
     img {
-        height: 64px;
+        height: 40px;
         width: auto;
     }
 
     // A boxy mark reads smaller than a wide one at the same height, because the eye
     // compares area rather than height. This gives it back the weight it loses.
     .logo-tall {
-        height: 84px;
+        height: 52px;
     }
+}
+
+// All that is left of the band that used to carry the logos: a rule of colour between
+// the header and the navigation.
+.accent-strip {
+    height: 5px;
+    background-color: $r4l-pale-green;
+    // The body is a flex column and the page overflows it, so anything with no content
+    // of its own to hold it open gets shrunk away to nothing.
+    flex: 0 0 auto;
 }
 
 .navbar {
@@ -213,6 +246,33 @@ body {
     background-color: $r4l-pale-green;
 }
 
+// The map carried its height inline until the page grew a second layout: stacked it
+// wants a slice of the viewport, but beside the panel it should run the full height of
+// the screen, which is the point of putting it there.
+.study-area-map {
+    height: 60vh;
+    min-height: 24rem;
+}
+
+@include media-breakpoint-up(xl) {
+    // Beside the panel the map stops owning its height and takes the column's, which
+    // the panel sets. It grows rather than filling outright so that the layer bar below
+    // it, which appears once something is drawn, takes its share off the top.
+    .area-workspace .study-area-map {
+        height: auto;
+        flex: 1 1 auto;
+        min-height: 30rem;
+    }
+
+    // Five tabs in a column this narrow wrap onto a second line and the strip stops
+    // reading as one control, so they give up some padding first.
+    .area-workspace .hydroperiod-panel .nav-tabs .nav-link {
+        padding-left: .6rem;
+        padding-right: .6rem;
+        font-size: .925rem;
+    }
+}
+
 .hydroperiod-panel {
     border-color: rgba($r4l-teal, .25);
 
@@ -251,6 +311,35 @@ body {
     &.active {
         background-color: $r4l-teal;
         color: $white;
+    }
+}
+
+// The divider between two cycles being compared. It sits above the tiles but below
+// Leaflet's own controls, which stay clickable while it is on screen.
+.map-curtain {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    z-index: 500;
+    border-left: 2px solid rgba($white, .9);
+    box-shadow: 0 0 4px rgba($r4l-charcoal, .5);
+    cursor: ew-resize;
+
+    .map-curtain-grip {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background-color: $white;
+        color: $r4l-charcoal;
+        box-shadow: 0 1px 4px rgba($r4l-charcoal, .5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 
