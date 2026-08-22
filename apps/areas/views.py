@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.gis.db.models.functions import AsGeoJSON
+from django.db.models.functions import Coalesce
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views import View, generic
@@ -34,6 +35,7 @@ def geojson_collection(wetlands):
             'properties': {
                 'pk': wetland.pk,
                 'name': wetland.name,
+                'kind': wetland.kind,
                 'country': wetland.country,
                 'official_area': wetland.official_area,
             },
@@ -45,9 +47,20 @@ def geojson_collection(wetlands):
 
 
 def simplified_wetlands(study_area, tolerance=MAP_TOLERANCE, decimals=MAP_DECIMALS):
+    """The study area's areas, light enough to draw.
+
+    `ST_Simplify` returns NULL for anything that fits inside the tolerance, and some of
+    the eLTER sites are a single plot a few tens of metres across. Falling back to the
+    raw geometry costs nothing for exactly those -- they are tiny, that being the
+    problem -- and keeps them from vanishing off the map while still being offered in
+    the dropdown.
+    """
     return (
         Wetland.objects.filter(study_area=study_area)
-        .annotate(geojson=AsGeoJSON(Simplify('geom', tolerance), precision=decimals))
+        .annotate(geojson=Coalesce(
+            AsGeoJSON(Simplify('geom', tolerance), precision=decimals),
+            AsGeoJSON('geom', precision=decimals),
+        ))
         .defer('geom')
         .order_by('name')
     )
