@@ -264,22 +264,118 @@ body {
         min-height: 30rem;
     }
 
+    // On a tall screen the panel ran out before the window did and left a dead strip
+    // under the map, because the row was only ever as tall as its contents. `main`
+    // already spans navbar to footer, so the row is told to take what is left of it.
+    .area-page {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .area-page .area-workspace {
+        flex: 1 1 auto;
+        // Without this the row refuses to shrink below its content and the panel pushes
+        // the footer off the screen instead of scrolling.
+        min-height: 0;
+    }
+
+    .area-page .area-workspace > [class*="col-"] {
+        min-height: 0;
+    }
+
+    // The panel carries more white space than it needs, so it hands some width to the
+    // map. This trims the grid column rather than dropping to the next Bootstrap step
+    // (col-5 -> col-4), which would take a fifth of the column at once. Delete these
+    // two rules and the layout is back to the plain 5/7 and 4/8 split.
+    .area-workspace > .area-panel-col {
+        width: 38.5%;
+    }
+
+    .area-workspace > .area-panel-col ~ [class*="col-"] {
+        width: 61.5%;
+    }
+
+    // Five tabs' worth of controls is taller than most screens, so the panel scrolls
+    // within its column rather than setting the height of the row -- which is now the
+    // window's to set.
+    .area-panel-col {
+        display: flex;
+        flex-direction: column;
+
+        .hydroperiod-panel {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+        }
+    }
+
     // Five tabs in a column this narrow wrap onto a second line and the strip stops
-    // reading as one control, so they give up some padding first.
+    // reading as one control, so they give up their padding and the gap between them
+    // first: at this width the outline is doing the separating anyway.
     .area-workspace .hydroperiod-panel .nav-tabs .nav-link {
-        padding-left: .6rem;
-        padding-right: .6rem;
-        font-size: .925rem;
+        padding-left: .5rem;
+        padding-right: .5rem;
+        margin-right: .05rem;
+        font-size: .95rem;
+    }
+}
+
+@include media-breakpoint-up(xxl) {
+    .area-workspace > .area-panel-col {
+        width: 30.5%;
+    }
+
+    .area-workspace > .area-panel-col ~ [class*="col-"] {
+        width: 69.5%;
     }
 }
 
 .hydroperiod-panel {
     border-color: rgba($r4l-teal, .25);
 
-    .nav-tabs .nav-link.active {
-        border-bottom-color: $white;
-        color: $r4l-teal;
-        font-weight: 600;
+    // The panel was built out of Bootstrap's small controls (.875rem), which read as
+    // cramped in a column this narrow, so they are back at the body's own size. The
+    // tabs stay a step below: five of them across a column this width is what decides
+    // their size, not legibility. The panel is taller for it and scrolls within its
+    // column, which is what that overflow is there for.
+    .form-select-sm,
+    .form-control-sm,
+    .col-form-label-sm,
+    .form-check-label,
+    .form-text,
+    .btn-sm,
+    .small,
+    small,
+    label {
+        font-size: 1rem;
+    }
+
+    // Bootstrap only outlines the tab you are on, so the strip reads as a row of links
+    // and not as five tabs with four of them behind. Every tab gets the outline and a
+    // tinted face; the one in front keeps the white of the card and drops the border it
+    // shares with the body, which is what puts it in front.
+    .nav-tabs {
+        border-bottom-color: rgba($r4l-teal, .25);
+
+        .nav-link {
+            margin-right: .15rem;
+            border-color: rgba($r4l-teal, .25);
+            background-color: rgba($r4l-teal, .06);
+            color: $r4l-charcoal;
+
+            &:hover:not(.active) {
+                background-color: rgba($r4l-teal, .12);
+                border-color: rgba($r4l-teal, .35);
+            }
+        }
+
+        .nav-link.active {
+            background-color: $white;
+            border-color: rgba($r4l-teal, .25);
+            border-bottom-color: $white;
+            color: $r4l-teal;
+            font-weight: 600;
+        }
     }
 
     h3 {
@@ -297,6 +393,18 @@ body {
 
 .hydroperiod-layer {
     border-color: rgba($r4l-teal, .25);
+}
+
+// The switcher grows to fit the longest name in it, and the names now end in the area
+// they were computed on -- some eLTER sites are a sentence. Past this width it would be
+// covering the map, so it cuts and leaves the rest to the tooltip.
+.leaflet-control-layers-list label span {
+    display: inline-block;
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
 }
 
 // The value reader sits with the other map tools, so it borrows Leaflet's own button

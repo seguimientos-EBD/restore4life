@@ -5,7 +5,7 @@
 
 {# The map is the work surface here, so this page takes the whole width rather than #}
 {# the centred column the rest of the site uses. #}
-{% block container_size %}container-fluid px-lg-4{% endblock container_size %}
+{% block container_size %}container-fluid px-lg-4 area-page{% endblock container_size %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -16,7 +16,7 @@
 {# Controls to the left, map to the right. Below xl the two stack and the panel goes #}
 {# back to spreading its own columns across the page. #}
 <div class="row g-3 area-workspace">
-    <div class="col-xl-5 col-xxl-4">
+    <div class="col-xl-5 col-xxl-4 area-panel-col">
         {% hydroperiod_panel study_area %}
     </div>
 
