@@ -23,18 +23,65 @@
         <div class="row g-4">
             <div class="col-md-6 col-xl-12">
                 {# By hand because it does not come from a form: the study area is a group of #}
-                {# wetlands and the computation runs on one of them, or on a drawn shape. #}
-                <div class="row mb-3">
-                    <label class="col-5 col-form-label-sm" for="id_wetland">Wetland</label>
+                {# areas and the computation runs on one of them, or on a drawn shape. #}
+                {# Three ways in -- a Ramsar wetland, an eLTER site, or a drawing -- and #}
+                {# together they are far too many entries for one dropdown, so the source is #}
+                {# chosen first and only then what within it. #}
+                <div class="row mb-2">
+                    <label class="col-5 col-form-label-sm" for="id_area_source">Area source</label>
                     <div class="col-7">
-                        <select class="form-select form-select-sm js-wetland" id="id_wetland" name="wetland">
-                            <option value="">— Pick one, or draw on the map —</option>
-                            {% for wetland in wetlands %}
-                                <option value="{{ wetland.pk }}">
-                                    {{ wetland.name }}{% if wetland.country %} ({{ wetland.country }}){% endif %}
-                                </option>
-                            {% endfor %}
+                        <select class="form-select form-select-sm js-area-source" id="id_area_source">
+                            <option value="">— Pick a source —</option>
+                            {% if wetlands %}<option value="ramsar">Ramsar wetlands</option>{% endif %}
+                            {% if elter_sites %}<option value="elter">eLTER sites</option>{% endif %}
+                            <option value="draw">Draw on the map</option>
                         </select>
+                    </div>
+                </div>
+
+                {# One second-level dropdown per source, and only the chosen one is in the #}
+                {# form: they share the `wetland` name, and disabling the rest is what keeps #}
+                {# the server from being sent two answers to the same question. #}
+                {% if wetlands %}
+                    <div class="row mb-3 js-area-choice d-none" data-source="ramsar">
+                        <label class="col-5 col-form-label-sm" for="id_wetland">Wetland</label>
+                        <div class="col-7">
+                            <select class="form-select form-select-sm js-wetland" id="id_wetland"
+                                    name="wetland" data-source="ramsar" disabled>
+                                <option value="">— Pick one —</option>
+                                {% for wetland in wetlands %}
+                                    <option value="{{ wetland.pk }}">
+                                        {{ wetland.name }}{% if wetland.country %} ({{ wetland.country }}){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if elter_sites %}
+                    <div class="row mb-3 js-area-choice d-none" data-source="elter">
+                        <label class="col-5 col-form-label-sm" for="id_elter_site">eLTER site</label>
+                        <div class="col-7">
+                            <select class="form-select form-select-sm js-wetland" id="id_elter_site"
+                                    name="wetland" data-source="elter" disabled>
+                                <option value="">— Pick one —</option>
+                                {% for site in elter_sites %}
+                                    <option value="{{ site.pk }}">
+                                        {{ site.name }}{% if site.country %} ({{ site.country }}){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="row mb-3 js-area-choice d-none" data-source="draw">
+                    <div class="col-12">
+                        <p class="small text-muted mb-0">
+                            <i class="bi bi-pencil"></i>
+                            Draw the area with the polygon or rectangle tool on the left of the map.
+                        </p>
                     </div>
                 </div>
 

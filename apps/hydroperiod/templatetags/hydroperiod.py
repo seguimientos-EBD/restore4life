@@ -4,6 +4,7 @@ The panel is a slice of the study area detail page, but it assembles itself so t
 the `areas` app need know nothing about hydroperiod or Earth Engine.
 """
 
+from areas.models import Wetland
 from django import template
 
 from hydroperiod import forms, services
@@ -15,8 +16,11 @@ register = template.Library()
 def hydroperiod_panel(context, study_area):
     return {
         'study_area': study_area,
-        # The ROI is a wetland, not the whole study area: the panel starts by picking one.
-        'wetlands': study_area.wetlands.defer('geom'),
+        # The ROI is one area of the study area, not the whole of it: the panel starts by
+        # picking one. The two registries are handed over apart so the dropdown can group
+        # them, which is the only place the distinction shows.
+        'wetlands': study_area.wetlands.defer('geom').filter(kind=Wetland.Kind.RAMSAR),
+        'elter_sites': study_area.wetlands.defer('geom').filter(kind=Wetland.Kind.ELTER),
         'form_hydroperiod': forms.HydroperiodForm(),
         'form_anomalies': forms.AnomaliesForm(),
         'form_twi': forms.TwiForm(),

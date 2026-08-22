@@ -177,6 +177,9 @@ class TilesView(ProductView):
             return {
                 'url': services.tile_url(product.image, product.vis_key),
                 'name': product.name,
+                # Which area it was computed on, so the layer switcher can say so: with
+                # several layers up, the product alone does not tell one run from another.
+                'area': product.label,
                 'legend': services.VIS[product.vis_key],
             }
 

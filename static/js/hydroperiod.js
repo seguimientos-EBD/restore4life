@@ -101,8 +101,33 @@ function hydroLog(message, type) {
     }
 }
 
+/* The area dropdown in play. There is one per source and only the chosen source's is
+ * enabled, so this is also the one -- and the only one -- the form submits. Returns null
+ * while the source is the map or nothing has been picked yet. */
+function hydroAreaSelect(form) {
+    return form.querySelector('.js-wetland:not([disabled])');
+}
+
+/* Brings the second level into line with the source chosen at the first: shows its row,
+ * hides the others, and takes them out of the form so that two selects sharing the
+ * `wetland` name cannot both answer for it. */
+function hydroSetAreaSource(form, source) {
+    form.querySelector('.js-area-source').value = source;
+    form.querySelectorAll('.js-area-choice').forEach(function(row) {
+        row.classList.toggle('d-none', row.dataset.source !== source);
+    });
+    form.querySelectorAll('.js-wetland').forEach(function(select) {
+        const chosen = select.dataset.source === source;
+        select.disabled = !chosen;
+        if (!chosen) {
+            select.value = '';
+        }
+    });
+}
+
 function hydroWetlandName(form) {
-    const option = form.querySelector('.js-wetland').selectedOptions[0];
+    const select = hydroAreaSelect(form);
+    const option = select && select.selectedOptions[0];
     return option && option.value ? option.textContent.trim() : null;
 }
 
@@ -160,15 +185,23 @@ function hydroShowLayerBar(name, legend, opacity) {
     hydroDrawLegend(panel, legend);
 }
 
-/* The switcher lists layers by name, so two runs of the same product need telling
- * apart — otherwise the second entry is indistinguishable from the first. */
-function hydroLayerName(data) {
-    const taken = HYDRO.layers.filter(function(entry) { return entry.base === data.name; }).length;
-    return taken ? data.name + ' (' + (taken + 1) + ')' : data.name;
+/* The switcher lists layers by name, so two runs of the same product need telling apart.
+ * The area they were computed on is what does it, and it is what you actually want to
+ * read off the switcher when several are up. */
+function hydroLayerBase(data) {
+    return data.area ? data.name + ' — ' + data.area : data.name;
+}
+
+/* Numbering is what is left for the runs the area cannot separate: every drawn shape is
+ * called the same thing, and the same area computed twice is genuinely two layers. */
+function hydroLayerName(base) {
+    const taken = HYDRO.layers.filter(function(entry) { return entry.base === base; }).length;
+    return taken ? base + ' (' + (taken + 1) + ')' : base;
 }
 
 function hydroAddLayer(data, parameters) {
-    const name = hydroLayerName(data);
+    const base = hydroLayerBase(data);
+    const name = hydroLayerName(base);
     const layer = L.tileLayer(data.url, {opacity: 0.8, maxZoom: 18}).addTo(HYDRO.map);
     addOverlay(layer, name);
 
@@ -177,7 +210,7 @@ function hydroAddLayer(data, parameters) {
     /* An id of its own rather than its position: the comparison dropdowns hold a
        reference to a layer that has to survive other layers being removed under it. */
     const entry = {
-        id: ++HYDRO.lastId, layer: layer, name: name, base: data.name,
+        id: ++HYDRO.lastId, layer: layer, name: name, base: base,
         legend: data.legend, parameters: parameters,
     };
     HYDRO.layers.push(entry);
@@ -204,8 +237,8 @@ function hydroRoiLabel(form) {
     if (form.elements.geometry.value) {
         return 'the area you drew';
     }
-    const option = form.querySelector('.js-wetland').selectedOptions[0];
-    return option && option.value ? '"' + option.textContent.trim() + '"' : null;
+    const name = hydroWetlandName(form);
+    return name ? '"' + name + '"' : null;
 }
 
 function hydroCsrf(form) {
@@ -710,7 +743,7 @@ document.addEventListener('roi:drawn', function(event) {
         return;
     }
     form.elements.geometry.value = JSON.stringify(event.detail.geometry);
-    form.querySelector('.js-wetland').value = '';
+    hydroSetAreaSource(form, 'draw');
     hydroLog('Area drawn on the map: it is now what gets analysed.', 'ok');
 });
 
@@ -720,7 +753,7 @@ document.addEventListener('roi:cleared', function() {
         return;
     }
     form.elements.geometry.value = '';
-    hydroLog('Drawn area removed: pick a wetland to carry on.');
+    hydroLog('Drawn area removed: pick an area source to carry on.');
 });
 
 document.addEventListener('inspect:toggle', function() {
@@ -742,8 +775,18 @@ document.addEventListener('wetland:selected', function(event) {
     if (!form) {
         return;
     }
-    form.querySelector('.js-wetland').value = event.detail.pk;
-    hydroLog('Wetland picked on the map: ' + hydroWetlandName(form) + '.');
+    /* The map says which area, not which registry it came from: whichever dropdown holds
+       that option is the one that answers, and the source follows from it. */
+    const pk = String(event.detail.pk);
+    const owner = Array.prototype.find.call(form.querySelectorAll('.js-wetland'), function(select) {
+        return select.querySelector('option[value="' + pk + '"]');
+    });
+    if (!owner) {
+        return;
+    }
+    hydroSetAreaSource(form, owner.dataset.source);
+    owner.value = pk;
+    hydroLog('Area picked on the map: ' + hydroWetlandName(form) + '.');
 });
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -772,16 +815,31 @@ document.addEventListener('DOMContentLoaded', function() {
         form.elements[name].addEventListener('change', function() { hydroAdjustCycles(form); });
     });
 
+    /* The first level decides which second-level dropdown is in the form; picking the
+       map as the source drops any area that was chosen, the same way picking an area
+       drops the drawing. */
+    form.querySelector('.js-area-source').addEventListener('change', function() {
+        hydroSetAreaSource(form, this.value);
+        if (this.value === 'draw') {
+            document.dispatchEvent(new CustomEvent('wetland:cleared'));
+            hydroLog('Draw the area on the map to choose it.');
+        } else if (this.value) {
+            document.dispatchEvent(new CustomEvent('roi:clear-request'));
+        }
+    });
+
     /* On changing wetland the layer on the map no longer belongs to it, and the map has
        to go and find it: that is the map's job, since it holds the geometry. */
     /* Picking from the dropdown drops the drawn area: the two are alternative ways of
        saying the same thing, and the server would silently prefer the drawing. */
-    form.querySelector('.js-wetland').addEventListener('change', function() {
-        if (this.value) {
-            document.dispatchEvent(new CustomEvent('roi:clear-request'));
-            hydroLog('Wetland picked: ' + hydroWetlandName(form) + '.');
-            document.dispatchEvent(new CustomEvent('wetland:focus', {detail: {pk: Number(this.value)}}));
-        }
+    form.querySelectorAll('.js-wetland').forEach(function(select) {
+        select.addEventListener('change', function() {
+            if (this.value) {
+                document.dispatchEvent(new CustomEvent('roi:clear-request'));
+                hydroLog('Area picked: ' + hydroWetlandName(form) + '.');
+                document.dispatchEvent(new CustomEvent('wetland:focus', {detail: {pk: Number(this.value)}}));
+            }
+        });
     });
 
     form.querySelector('.js-clear-log').addEventListener('click', function() {
