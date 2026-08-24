@@ -24,7 +24,12 @@ from google.auth.exceptions import RefreshError
 
 from hydroperiod import services
 from hydroperiod.forms import (
-    AnomaliesForm, ExportForm, HydroperiodForm, PointForm, StatsForm, TwiForm,
+    AnomaliesForm,
+    ExportForm,
+    HydroperiodForm,
+    PointForm,
+    StatsForm,
+    TwiForm,
 )
 
 logger = logging.getLogger(__name__)
