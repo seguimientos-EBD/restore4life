@@ -35,12 +35,14 @@ def hydroperiod_layer(roi, data):
         roi, data['sensor'], data['start_year'], data['end_year'],
         data['index'], data['threshold'], data['max_clouds'],
     )
-    if data['band'] == 'irt':
-        return services.compute_irt(analyzer), 'irt', 'IRT'
-
     year = data['year']
     if year not in cycles:
         raise ValueError(f'The {year}/{year + 1} cycle was never computed.')
+
+    if data['band'] == 'irt':
+        irt = services.compute_irt(analyzer, year, data['index'], data['threshold'])
+        return irt, 'irt', f'IRT {year}/{year + 1}'
+
     return cycles[year].select(data['band']), data['band'], f'{data["band"]} {year}/{year + 1}'
 
 
@@ -310,7 +312,9 @@ class ExportView(ProductView):
             roi, data['sensor'], data['start_year'], data['end_year'],
             data['index'], data['threshold'], data['max_clouds'],
         )
-        descriptions = services.export_cycles(analyzer, cycles, label, scale, folder)
+        descriptions = services.export_cycles(
+            analyzer, cycles, label, scale, data['index'], data['threshold'], folder,
+        )
         return {'folder': folder, 'scale': scale, 'tasks': descriptions}
 
     def export_product(self, request, folder, scale):

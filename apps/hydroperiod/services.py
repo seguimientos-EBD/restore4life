@@ -61,6 +61,13 @@ TWI_SCALE = 90
 
 DEFAULT_DRIVE_FOLDER = 'restore4life_hydroperiod'
 
+# The IRT rides inside the per-cycle GeoTIFF as thousandths, Int16. Earth Engine refuses
+# to export bands of different types, and every band ndvi2gif puts in a cycle is Int16:
+# its docstring claims float32 for `hydroperiod` and `valid_days`, but the code rounds
+# and casts both. A 0-1 ratio cast straight to Int16 would collapse to 0 and 1, hence
+# the factor. Divide by it to read the band back as the 0-1 the map shows.
+IRT_EXPORT_SCALE = 1000
+
 # Scales offered for exports, in metres. The finest ones only make sense for S2.
 EXPORT_SCALES = (10, 20, 30, 100, 250, 500)
 
@@ -245,9 +252,20 @@ def compute_cycles(roi, sensor, start_year, end_year, index, threshold, max_clou
     return analyzer, analyzer.compute_all_cycles(index=index, threshold=threshold)
 
 
-def compute_irt(analyzer):
-    """Per-pixel IRT (temporal regularity index) image."""
-    return analyzer.compute_irt_image()
+def compute_irt(analyzer, hyd_year, index, threshold):
+    """Per-pixel IRT (temporal regularity index) image for one hydrological cycle.
+
+    The water masks are asked for explicitly, and this is not redundant:
+    `compute_irt_image` only honours its own `hyd_year` when the analyzer has no masks
+    cached, and by the time we get here `compute_cycles` has left it holding those of
+    the last year of the period. Without this call the IRT would come out for that
+    year whatever cycle was asked for.
+
+    They are rebuilt with the same index and threshold as the cycle, so the
+    observations the IRT counts are the ones the hydroperiod was measured on.
+    """
+    analyzer.get_water_masks(index=index, threshold=threshold, hyd_year=hyd_year)
+    return analyzer.compute_irt_image(hyd_year=hyd_year)
 
 
 def compute_anomalies(analyzer, cycles, reference='period'):
@@ -473,11 +491,21 @@ def export_image(image, roi, description, scale, folder=DEFAULT_DRIVE_FOLDER):
     return task
 
 
-def export_cycles(analyzer, cycles, label, scale, folder=DEFAULT_DRIVE_FOLDER):
-    """Starts one export per hydrological cycle and returns their descriptions."""
+def export_cycles(analyzer, cycles, label, scale, index, threshold, folder=DEFAULT_DRIVE_FOLDER):
+    """Starts one export per hydrological cycle and returns their descriptions.
+
+    Each cycle carries its own IRT as a sixth band. It is rebuilt year by year rather
+    than computed once because `compute_irt` resets the analyzer's water masks to the
+    year it is asked for, which is what keeps every file's IRT its own.
+
+    The band travels scaled by `IRT_EXPORT_SCALE` and cast to Int16, which is what the
+    other five are: a float band among them makes Earth Engine reject the whole export.
+    """
     descriptions = []
     for year, image in cycles.items():
         description = task_name('hydroperiod', label, year, year + 1)
+        irt = compute_irt(analyzer, year, index, threshold)
+        image = image.addBands(irt.multiply(IRT_EXPORT_SCALE).round().toInt16().rename('irt'))
         analyzer.export_to_drive(image=image, folder=folder, description=description, scale=scale)
         descriptions.append(description)
     return descriptions
