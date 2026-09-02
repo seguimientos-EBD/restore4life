@@ -11,7 +11,6 @@ whatever the map is showing without a product list of their own.
 """
 
 import logging
-import re
 from collections import namedtuple
 
 import ee
@@ -25,7 +24,12 @@ from google.auth.exceptions import RefreshError
 
 from hydroperiod import services
 from hydroperiod.forms import (
-    AnomaliesForm, ExportForm, HydroperiodForm, PointForm, StatsForm, TwiForm,
+    AnomaliesForm,
+    ExportForm,
+    HydroperiodForm,
+    PointForm,
+    StatsForm,
+    TwiForm,
 )
 
 logger = logging.getLogger(__name__)
@@ -36,12 +40,14 @@ def hydroperiod_layer(roi, data):
         roi, data['sensor'], data['start_year'], data['end_year'],
         data['index'], data['threshold'], data['max_clouds'],
     )
-    if data['band'] == 'irt':
-        return services.compute_irt(analyzer), 'irt', 'IRT'
-
     year = data['year']
     if year not in cycles:
         raise ValueError(f'The {year}/{year + 1} cycle was never computed.')
+
+    if data['band'] == 'irt':
+        irt = services.compute_irt(analyzer, year, data['index'], data['threshold'])
+        return irt, 'irt', f'IRT {year}/{year + 1}'
+
     return cycles[year].select(data['band']), data['band'], f'{data["band"]} {year}/{year + 1}'
 
 
@@ -81,12 +87,6 @@ def _first_error(form):
     for errors in form.errors.values():
         return errors[0]
     return 'Invalid parameters.'
-
-
-def _task_name(*parts):
-    """Earth Engine only takes letters, digits, hyphens and underscores in a task name."""
-    joined = '_'.join(str(part) for part in parts if part)
-    return re.sub(r'[^A-Za-z0-9_-]+', '_', joined).strip('_')[:100]
 
 
 def ee_json(request, build, action):
@@ -184,6 +184,9 @@ class TilesView(ProductView):
             return {
                 'url': services.tile_url(product.image, product.vis_key),
                 'name': product.name,
+                # Which area it was computed on, so the layer switcher can say so: with
+                # several layers up, the product alone does not tell one run from another.
+                'area': product.label,
                 'legend': services.VIS[product.vis_key],
             }
 
@@ -245,7 +248,7 @@ class StatsView(ProductView):
 
             if stats_form.cleaned_data['to_drive']:
                 folder = stats_form.cleaned_data['folder']
-                description = _task_name('stats', product.name, product.label)
+                description = services.task_name('stats', product.name, product.label)
                 services.export_table(product.image, collection, scale, is_point, description, folder)
                 return {
                     'product': product.name, 'scale': scale, 'geometry': geometry,
@@ -314,12 +317,14 @@ class ExportView(ProductView):
             roi, data['sensor'], data['start_year'], data['end_year'],
             data['index'], data['threshold'], data['max_clouds'],
         )
-        descriptions = services.export_cycles(analyzer, cycles, label, scale, folder)
+        descriptions = services.export_cycles(
+            analyzer, cycles, label, scale, data['index'], data['threshold'], folder,
+        )
         return {'folder': folder, 'scale': scale, 'tasks': descriptions}
 
     def export_product(self, request, folder, scale):
         """A single GeoTIFF of whatever product is selected — TWI, IRT, an anomaly or a band."""
         product = self.resolve_product(request)
-        description = _task_name(product.name, product.label)
+        description = services.task_name(product.name, product.label)
         services.export_image(product.image, product.roi, description, scale, folder)
         return {'folder': folder, 'scale': scale, 'tasks': [description]}

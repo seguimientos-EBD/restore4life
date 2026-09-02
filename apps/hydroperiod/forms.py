@@ -153,9 +153,7 @@ class HydroperiodForm(ParametersForm):
 
     def clean(self):
         data = super().clean()
-        # The IRT summarizes the whole period, so it does not hang off a single cycle.
-        if data.get('band') != 'irt':
-            self.validate_cycle(data, 'year')
+        self.validate_cycle(data, 'year')
         return data
 
 

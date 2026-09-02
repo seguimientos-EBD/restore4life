@@ -101,11 +101,15 @@ class Command(BaseCommand):
             if boundary is not None:
                 study_area.boundary = boundary
                 study_area.save(update_fields=['boundary'])
-            deleted, _ = study_area.wetlands.all().delete()
+            # Only the Ramsar wetlands: the eLTER sites of the same study area come from
+            # another registry and another command, and rebuilding one must not silently
+            # take the other with it.
+            deleted, _ = study_area.wetlands.filter(kind=Wetland.Kind.RAMSAR).delete()
 
             wetlands = [
                 Wetland(
                     study_area=study_area,
+                    kind=Wetland.Kind.RAMSAR,
                     geom=GEOSGeometry(memoryview(row.geometry.wkb), srid=4326),
                     **{field: _value(row, column, field) for field, column in COLUMNS.items()},
                 )
@@ -116,7 +120,7 @@ class Command(BaseCommand):
 
         verb = 'created' if created else 'updated'
         if deleted:
-            self.stdout.write(f'Deleted {deleted} wetlands the study area already had.')
+            self.stdout.write(f'Deleted {deleted} Ramsar wetlands the study area already had.')
         self.stdout.write(self.style.SUCCESS(
             f'Study area "{study_area.name}" {verb} (id={study_area.pk}) with {len(wetlands)} wetlands.'
         ))

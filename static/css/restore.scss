@@ -115,8 +115,9 @@ body {
     font-family: $font-family-sans-serif;
 }
 
-// The project site leads with a dark band carrying the white logotype; the partner
-// logos sit below it on a pale green field so they read without competing.
+// The project site leads with a dark band carrying the white logotype. Everything the
+// header has to say lives in that one band: identity on the left, the name of this
+// application in the middle, who runs it on the right.
 .brand-header {
     background-color: $r4l-charcoal;
 
@@ -125,14 +126,32 @@ body {
         width: auto;
     }
 
-    .brand-subtitle {
-        font-size: 1.15rem;
-        color: rgba($white, .75);
-    }
-
     .brand-tagline {
         font-size: 1.05rem;
         color: rgba($white, .75);
+    }
+
+    // The one piece of text on the page that names what this is, so it is allowed to
+    // be loud, and it borrows the pale green of the rule below to tie the two together.
+    .brand-appname {
+        font-family: $headings-font-family;
+        font-weight: 600;
+        font-size: clamp(1.5rem, 2.6vw, 2.6rem);
+        line-height: 1.15;
+        letter-spacing: .01em;
+        color: $r4l-pale-green;
+        flex: 0 0 auto;
+    }
+
+    // The identity is a good deal wider than the logos, so a middle block that simply
+    // took what they left over would sit right of centre. Giving both sides the same
+    // width puts the name on the centre line of the screen instead. Only from `lg`:
+    // below it the three stack and there are no sides to balance.
+    @include media-breakpoint-up(lg) {
+        .brand-side {
+            flex: 1 1 0;
+            min-width: 0;
+        }
     }
 
     a {
@@ -141,20 +160,34 @@ body {
     }
 }
 
-.partner-strip {
-    background-color: $r4l-pale-green;
-    border-bottom: 1px solid rgba($r4l-charcoal, .1);
+// On the pale green band these stood on their own. Against charcoal they need a field
+// of their own: two are opaque JPEGs that would otherwise read as floating white
+// rectangles, and the third is black lettering on transparency, which would disappear.
+.partner-logos {
+    background-color: $white;
+    border-radius: $border-radius;
+    padding: .35rem .6rem;
 
     img {
-        height: 64px;
+        height: 40px;
         width: auto;
     }
 
     // A boxy mark reads smaller than a wide one at the same height, because the eye
     // compares area rather than height. This gives it back the weight it loses.
     .logo-tall {
-        height: 84px;
+        height: 52px;
     }
+}
+
+// All that is left of the band that used to carry the logos: a rule of colour between
+// the header and the navigation.
+.accent-strip {
+    height: 5px;
+    background-color: $r4l-pale-green;
+    // The body is a flex column and the page overflows it, so anything with no content
+    // of its own to hold it open gets shrunk away to nothing.
+    flex: 0 0 auto;
 }
 
 .navbar {
@@ -213,13 +246,136 @@ body {
     background-color: $r4l-pale-green;
 }
 
+// The map carried its height inline until the page grew a second layout: stacked it
+// wants a slice of the viewport, but beside the panel it should run the full height of
+// the screen, which is the point of putting it there.
+.study-area-map {
+    height: 60vh;
+    min-height: 24rem;
+}
+
+@include media-breakpoint-up(xl) {
+    // Beside the panel the map stops owning its height and takes the column's, which
+    // the panel sets. It grows rather than filling outright so that the layer bar below
+    // it, which appears once something is drawn, takes its share off the top.
+    .area-workspace .study-area-map {
+        height: auto;
+        flex: 1 1 auto;
+        min-height: 30rem;
+    }
+
+    // On a tall screen the panel ran out before the window did and left a dead strip
+    // under the map, because the row was only ever as tall as its contents. `main`
+    // already spans navbar to footer, so the row is told to take what is left of it.
+    .area-page {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .area-page .area-workspace {
+        flex: 1 1 auto;
+        // Without this the row refuses to shrink below its content and the panel pushes
+        // the footer off the screen instead of scrolling.
+        min-height: 0;
+    }
+
+    .area-page .area-workspace > [class*="col-"] {
+        min-height: 0;
+    }
+
+    // The panel carries more white space than it needs, so it hands some width to the
+    // map. This trims the grid column rather than dropping to the next Bootstrap step
+    // (col-5 -> col-4), which would take a fifth of the column at once. Delete these
+    // two rules and the layout is back to the plain 5/7 and 4/8 split.
+    .area-workspace > .area-panel-col {
+        width: 38.5%;
+    }
+
+    .area-workspace > .area-panel-col ~ [class*="col-"] {
+        width: 61.5%;
+    }
+
+    // Five tabs' worth of controls is taller than most screens, so the panel scrolls
+    // within its column rather than setting the height of the row -- which is now the
+    // window's to set.
+    .area-panel-col {
+        display: flex;
+        flex-direction: column;
+
+        .hydroperiod-panel {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+        }
+    }
+
+    // Five tabs in a column this narrow wrap onto a second line and the strip stops
+    // reading as one control, so they give up their padding and the gap between them
+    // first: at this width the outline is doing the separating anyway.
+    .area-workspace .hydroperiod-panel .nav-tabs .nav-link {
+        padding-left: .5rem;
+        padding-right: .5rem;
+        margin-right: .05rem;
+        font-size: .95rem;
+    }
+}
+
+@include media-breakpoint-up(xxl) {
+    .area-workspace > .area-panel-col {
+        width: 30.5%;
+    }
+
+    .area-workspace > .area-panel-col ~ [class*="col-"] {
+        width: 69.5%;
+    }
+}
+
 .hydroperiod-panel {
     border-color: rgba($r4l-teal, .25);
 
-    .nav-tabs .nav-link.active {
-        border-bottom-color: $white;
-        color: $r4l-teal;
-        font-weight: 600;
+    // The panel was built out of Bootstrap's small controls (.875rem), which read as
+    // cramped in a column this narrow, so they are back at the body's own size. The
+    // tabs stay a step below: five of them across a column this width is what decides
+    // their size, not legibility. The panel is taller for it and scrolls within its
+    // column, which is what that overflow is there for.
+    .form-select-sm,
+    .form-control-sm,
+    .col-form-label-sm,
+    .form-check-label,
+    .form-text,
+    .btn-sm,
+    .small,
+    small,
+    label {
+        font-size: 1rem;
+    }
+
+    // Bootstrap only outlines the tab you are on, so the strip reads as a row of links
+    // and not as five tabs with four of them behind. Every tab gets the outline and a
+    // tinted face; the one in front keeps the white of the card and drops the border it
+    // shares with the body, which is what puts it in front.
+    .nav-tabs {
+        border-bottom-color: rgba($r4l-teal, .25);
+
+        .nav-link {
+            margin-right: .15rem;
+            border-color: rgba($r4l-teal, .25);
+            background-color: rgba($r4l-teal, .06);
+            color: $r4l-charcoal;
+
+            &:hover:not(.active) {
+                background-color: rgba($r4l-teal, .12);
+                border-color: rgba($r4l-teal, .35);
+            }
+        }
+
+        .nav-link.active {
+            background-color: $white;
+            border-color: rgba($r4l-teal, .25);
+            border-bottom-color: $white;
+            color: $r4l-teal;
+            font-weight: 600;
+        }
     }
 
     h3 {
@@ -239,6 +395,18 @@ body {
     border-color: rgba($r4l-teal, .25);
 }
 
+// The switcher grows to fit the longest name in it, and the names now end in the area
+// they were computed on -- some eLTER sites are a sentence. Past this width it would be
+// covering the map, so it cuts and leaves the rest to the tooltip.
+.leaflet-control-layers-list label span {
+    display: inline-block;
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
 // The value reader sits with the other map tools, so it borrows Leaflet's own button
 // look rather than Bootstrap's — a lone Bootstrap button among Leaflet ones reads as
 // something that fell out of the page.
@@ -251,6 +419,35 @@ body {
     &.active {
         background-color: $r4l-teal;
         color: $white;
+    }
+}
+
+// The divider between two cycles being compared. It sits above the tiles but below
+// Leaflet's own controls, which stay clickable while it is on screen.
+.map-curtain {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    z-index: 500;
+    border-left: 2px solid rgba($white, .9);
+    box-shadow: 0 0 4px rgba($r4l-charcoal, .5);
+    cursor: ew-resize;
+
+    .map-curtain-grip {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background-color: $white;
+        color: $r4l-charcoal;
+        box-shadow: 0 1px 4px rgba($r4l-charcoal, .5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 

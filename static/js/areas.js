@@ -48,6 +48,18 @@ const AREA_STYLE = {color: '#51727C', weight: 2, fillOpacity: 0.15};
 const AREA_STYLE_SELECTED = {color: '#729277', weight: 3, fillOpacity: 0.35};
 const AREA_STYLE_DRAWN = {color: '#C08A3E', weight: 2, fillOpacity: 0.15};
 
+/* eLTER sites overlap the Ramsar wetlands and are a different thing to pick, so they are
+ * drawn dashed and in their own colour: on a map showing both, the outline is the only
+ * clue as to which registry a shape came from. */
+const AREA_STYLE_ELTER = {color: '#8E6BA8', weight: 2, fillOpacity: 0.12, dashArray: '4 3'};
+
+/* The style a feature is drawn with when nothing is selected, which is the one it goes
+ * back to once something else is. */
+function areaStyle(feature) {
+    const kind = feature && feature.properties && feature.properties.kind;
+    return kind === 'elter' ? AREA_STYLE_ELTER : AREA_STYLE;
+}
+
 /* Options that leave the map as a plain image: no controls, no interaction. */
 const AREA_THUMBNAIL_OPTIONS = {
     zoomControl: false,
@@ -101,7 +113,7 @@ function prepareWetland(feature, layer) {
 /* Highlights the wetland and, if it was picked from the panel, takes the map to it. */
 function selectWetland(pk, fit) {
     if (AREA_WETLANDS.selected) {
-        AREA_WETLANDS.selected.setStyle(AREA_STYLE);
+        AREA_WETLANDS.selected.setStyle(areaStyle(AREA_WETLANDS.selected.feature));
     }
 
     const layer = AREA_WETLANDS.layers[pk];
@@ -176,8 +188,16 @@ function drawStudyArea(el, geojson, options, interactive) {
     const first = Object.values(basemaps)[0];
     const map = L.map(el, Object.assign({layers: [first]}, options));
 
-    const wetlands = L.geoJSON(geojson, {style: AREA_STYLE, onEachFeature: prepareWetland}).addTo(map);
+    const wetlands = L.geoJSON(geojson, {style: areaStyle, onEachFeature: prepareWetland}).addTo(map);
     map.fitBounds(wetlands.getBounds(), {padding: [8, 8]});
+
+    /* Beside the panel the map is as tall as the panel is, and the panel grows and
+       shrinks on its own: blocks appear once there are layers to compare, the log fills
+       up, tabs of different heights come and go. Leaflet sizes itself once and would
+       otherwise leave the new strip blank, with no tiles in it. */
+    if (window.ResizeObserver) {
+        new ResizeObserver(function() { map.invalidateSize(false); }).observe(el);
+    }
 
     if (interactive) {
         R4L_MAP.map = map;
@@ -256,16 +276,35 @@ function applyBoundary(map, geojson) {
     return boundary;
 }
 
+/* Layer names carry the area they were computed on and some of the eLTER ones run to a
+   full line, so the switcher trims them in CSS and keeps the whole name in the tooltip:
+   the alternative is a control wide enough to cover the map it sits on. Leaflet rebuilds
+   the list on every change, which is why this runs after each one rather than once. */
+function titleOverlays() {
+    if (!R4L_MAP.control) {
+        return;
+    }
+    R4L_MAP.control.getContainer().querySelectorAll('.leaflet-control-layers-list span')
+        .forEach(function(span) {
+            const text = span.textContent.trim();
+            if (text) {
+                span.title = text;
+            }
+        });
+}
+
 /* Registers a layer on the switcher so it can be toggled off without losing it. */
 function addOverlay(layer, name) {
     if (R4L_MAP.control) {
         R4L_MAP.control.addOverlay(layer, name);
+        titleOverlays();
     }
 }
 
 function removeOverlay(layer) {
     if (R4L_MAP.control) {
         R4L_MAP.control.removeLayer(layer);
+        titleOverlays();
     }
     if (R4L_MAP.map && R4L_MAP.map.hasLayer(layer)) {
         R4L_MAP.map.removeLayer(layer);
@@ -310,5 +349,14 @@ document.addEventListener('wetland:focus', function(event) {
 document.addEventListener('roi:clear-request', function() {
     if (R4L_MAP.drawnItems && R4L_MAP.drawnItems.getLayers().length) {
         clearDrawnRoi();
+    }
+});
+
+/* Switching the panel over to drawing gives up whatever area was picked, and the map
+   must stop showing one as selected: the highlight is a claim about what gets analysed. */
+document.addEventListener('wetland:cleared', function() {
+    if (AREA_WETLANDS.selected) {
+        AREA_WETLANDS.selected.setStyle(areaStyle(AREA_WETLANDS.selected.feature));
+        AREA_WETLANDS.selected = null;
     }
 });

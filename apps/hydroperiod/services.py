@@ -16,7 +16,9 @@ Every function here assumes Earth Engine is already initialized for the current 
 
 import io
 import json
+import re
 import tempfile
+import unicodedata
 import zipfile
 from datetime import date
 from pathlib import Path
@@ -58,6 +60,13 @@ SENSOR_SCALE = {'S2': 10, 'Landsat': 30, 'MODIS': 500}
 TWI_SCALE = 90
 
 DEFAULT_DRIVE_FOLDER = 'restore4life_hydroperiod'
+
+# The IRT rides inside the per-cycle GeoTIFF as thousandths, Int16. Earth Engine refuses
+# to export bands of different types, and every band ndvi2gif puts in a cycle is Int16:
+# its docstring claims float32 for `hydroperiod` and `valid_days`, but the code rounds
+# and casts both. A 0-1 ratio cast straight to Int16 would collapse to 0 and 1, hence
+# the factor. Divide by it to read the band back as the 0-1 the map shows.
+IRT_EXPORT_SCALE = 1000
 
 # Scales offered for exports, in metres. The finest ones only make sense for S2.
 EXPORT_SCALES = (10, 20, 30, 100, 250, 500)
@@ -116,9 +125,13 @@ VIS = {
         'min': 0, 'max': 365,
         'palette': ['ffffff', 'ffffcc', 'c7e9b4', '7fcdbb', '41b6c4', '1d91c0', '225ea8', '0c2c84'],
     },
+    # Diverging around zero, dry to wet: the sign is a number of flooded days above or
+    # below the reference, so the wet end is blue. Red-green would have read as
+    # bad-good, which is not what a longer hydroperiod means, and is besides the one
+    # pair that colour-blind readers cannot separate.
     'anomaly': {
         'min': -180, 'max': 180,
-        'palette': ['8b0000', 'd73027', 'fc8d59', 'fee08b', 'ffffff', 'd9ef8b', '91cf60', '1a9850', '00441b'],
+        'palette': ['67001f', 'b2182b', 'd6604d', 'f4a582', 'f7f7f7', '92c5de', '4393c3', '2166ac', '053061'],
     },
     'twi': {
         'min': 2, 'max': 20,
@@ -239,9 +252,20 @@ def compute_cycles(roi, sensor, start_year, end_year, index, threshold, max_clou
     return analyzer, analyzer.compute_all_cycles(index=index, threshold=threshold)
 
 
-def compute_irt(analyzer):
-    """Per-pixel IRT (temporal regularity index) image."""
-    return analyzer.compute_irt_image()
+def compute_irt(analyzer, hyd_year, index, threshold):
+    """Per-pixel IRT (temporal regularity index) image for one hydrological cycle.
+
+    The water masks are asked for explicitly, and this is not redundant:
+    `compute_irt_image` only honours its own `hyd_year` when the analyzer has no masks
+    cached, and by the time we get here `compute_cycles` has left it holding those of
+    the last year of the period. Without this call the IRT would come out for that
+    year whatever cycle was asked for.
+
+    They are rebuilt with the same index and threshold as the cycle, so the
+    observations the IRT counts are the ones the hydroperiod was measured on.
+    """
+    analyzer.get_water_masks(index=index, threshold=threshold, hyd_year=hyd_year)
+    return analyzer.compute_irt_image(hyd_year=hyd_year)
 
 
 def compute_anomalies(analyzer, cycles, reference='period'):
@@ -436,6 +460,22 @@ def zonal_statistics(image, collection, scale, is_point):
 # Export to Drive                                                              #
 # --------------------------------------------------------------------------- #
 
+def task_name(*parts):
+    """Joins the parts into a name Earth Engine will accept for a task.
+
+    EE takes only letters, digits, and a handful of punctuation, and rejects the whole
+    export if the name breaks the rule — so this has to run over anything coming from
+    the data, wetland names above all: they arrive from the shapefiles with accents,
+    parentheses and spaces in them.
+
+    Accented letters are folded to their ASCII base first, so `Kopački rit` becomes
+    `Kopacki_rit` rather than `Kopa_ki_rit`.
+    """
+    joined = '_'.join(str(part) for part in parts if part)
+    folded = unicodedata.normalize('NFKD', joined).encode('ascii', 'ignore').decode()
+    return re.sub(r'[^A-Za-z0-9_-]+', '_', folded).strip('_')[:100]
+
+
 def export_image(image, roi, description, scale, folder=DEFAULT_DRIVE_FOLDER):
     """Starts the export of an image as GeoTIFF and returns the task."""
     task = ee.batch.Export.image.toDrive(
@@ -451,12 +491,21 @@ def export_image(image, roi, description, scale, folder=DEFAULT_DRIVE_FOLDER):
     return task
 
 
-def export_cycles(analyzer, cycles, label, scale, folder=DEFAULT_DRIVE_FOLDER):
-    """Starts one export per hydrological cycle and returns their descriptions."""
-    label = label.replace(' ', '_').replace('/', '-')
+def export_cycles(analyzer, cycles, label, scale, index, threshold, folder=DEFAULT_DRIVE_FOLDER):
+    """Starts one export per hydrological cycle and returns their descriptions.
+
+    Each cycle carries its own IRT as a sixth band. It is rebuilt year by year rather
+    than computed once because `compute_irt` resets the analyzer's water masks to the
+    year it is asked for, which is what keeps every file's IRT its own.
+
+    The band travels scaled by `IRT_EXPORT_SCALE` and cast to Int16, which is what the
+    other five are: a float band among them makes Earth Engine reject the whole export.
+    """
     descriptions = []
     for year, image in cycles.items():
-        description = f'hydroperiod_{label}_{year}_{year + 1}'
+        description = task_name('hydroperiod', label, year, year + 1)
+        irt = compute_irt(analyzer, year, index, threshold)
+        image = image.addBands(irt.multiply(IRT_EXPORT_SCALE).round().toInt16().rename('irt'))
         analyzer.export_to_drive(image=image, folder=folder, description=description, scale=scale)
         descriptions.append(description)
     return descriptions

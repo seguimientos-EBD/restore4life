@@ -45,14 +45,15 @@ createdb restore4life
 sudo -u postgres psql -d restore4life -c "CREATE EXTENSION postgis;"
 ```
 
-Write a `.env` at the repo root. These seven have no default and the app will not start
-without them:
+Write a `.env` at the repo root. Seven of these have no default at all and the app will
+not start without them; `DEBUG` and `STATIC_ROOT` fall back to what the comment says,
+but you want both set anyway:
 
 ```ini
 SECRET_KEY=...
 DJANGO_CONFIGURATION=Dev          # 'Prod' turns on HSTS, secure cookies and Sentry
-DEBUG=True
-STATIC_ROOT=/path/to/staticfiles  # sass_processor writes the compiled CSS here
+DEBUG=True                        # defaults to False
+STATIC_ROOT=/path/to/staticfiles  # defaults to None; sass_processor writes the compiled CSS here
 MEDIA_ROOT=/path/to/media
 EE_TOKEN_ENCRYPTION_KEY=...       # Fernet key: Fernet.generate_key()
 DATABASE_NAME=restore4life

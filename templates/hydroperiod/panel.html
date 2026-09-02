@@ -18,21 +18,70 @@
 
     <div class="card-body">
         {# What it computes on | which product it draws | what has been going on. #}
+        {# Side by side while the panel spans the page; stacked once it becomes the narrow #}
+        {# column beside the map, where three abreast would leave nothing but labels. #}
         <div class="row g-4">
-            <div class="col-lg-4">
+            <div class="col-md-6 col-xl-12">
                 {# By hand because it does not come from a form: the study area is a group of #}
-                {# wetlands and the computation runs on one of them, or on a drawn shape. #}
-                <div class="row mb-3">
-                    <label class="col-5 col-form-label-sm" for="id_wetland">Wetland</label>
+                {# areas and the computation runs on one of them, or on a drawn shape. #}
+                {# Three ways in -- a Ramsar wetland, an eLTER site, or a drawing -- and #}
+                {# together they are far too many entries for one dropdown, so the source is #}
+                {# chosen first and only then what within it. #}
+                <div class="row mb-2">
+                    <label class="col-5 col-form-label-sm" for="id_area_source">Area source</label>
                     <div class="col-7">
-                        <select class="form-select form-select-sm js-wetland" id="id_wetland" name="wetland">
-                            <option value="">— Pick one, or draw on the map —</option>
-                            {% for wetland in wetlands %}
-                                <option value="{{ wetland.pk }}">
-                                    {{ wetland.name }}{% if wetland.country %} ({{ wetland.country }}){% endif %}
-                                </option>
-                            {% endfor %}
+                        <select class="form-select form-select-sm js-area-source" id="id_area_source">
+                            <option value="">— Pick a source —</option>
+                            {% if wetlands %}<option value="ramsar">Ramsar wetlands</option>{% endif %}
+                            {% if elter_sites %}<option value="elter">eLTER sites</option>{% endif %}
+                            <option value="draw">Draw on the map</option>
                         </select>
+                    </div>
+                </div>
+
+                {# One second-level dropdown per source, and only the chosen one is in the #}
+                {# form: they share the `wetland` name, and disabling the rest is what keeps #}
+                {# the server from being sent two answers to the same question. #}
+                {% if wetlands %}
+                    <div class="row mb-3 js-area-choice d-none" data-source="ramsar">
+                        <label class="col-5 col-form-label-sm" for="id_wetland">Wetland</label>
+                        <div class="col-7">
+                            <select class="form-select form-select-sm js-wetland" id="id_wetland"
+                                    name="wetland" data-source="ramsar" disabled>
+                                <option value="">— Pick one —</option>
+                                {% for wetland in wetlands %}
+                                    <option value="{{ wetland.pk }}">
+                                        {{ wetland.name }}{% if wetland.country %} ({{ wetland.country }}){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if elter_sites %}
+                    <div class="row mb-3 js-area-choice d-none" data-source="elter">
+                        <label class="col-5 col-form-label-sm" for="id_elter_site">eLTER site</label>
+                        <div class="col-7">
+                            <select class="form-select form-select-sm js-wetland" id="id_elter_site"
+                                    name="wetland" data-source="elter" disabled>
+                                <option value="">— Pick one —</option>
+                                {% for site in elter_sites %}
+                                    <option value="{{ site.pk }}">
+                                        {{ site.name }}{% if site.country %} ({{ site.country }}){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="row mb-3 js-area-choice d-none" data-source="draw">
+                    <div class="col-12">
+                        <p class="small text-muted mb-0">
+                            <i class="bi bi-pencil"></i>
+                            Draw the area with the polygon or rectangle tool on the left of the map.
+                        </p>
                     </div>
                 </div>
 
@@ -45,7 +94,7 @@
                 {% bootstrap_field form_hydroperiod.max_clouds size="sm" layout="horizontal" %}
             </div>
 
-            <div class="col-lg-4">
+            <div class="col-md-6 col-xl-12">
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#panel-hydroperiod"
@@ -80,7 +129,7 @@
 
                     <div class="tab-pane fade" id="panel-anomalies" role="tabpanel">
                         <p class="small text-muted">Compares each cycle against a reference mean: days above
-                            (green) or below (red) it.</p>
+                            (blue) or below (red) it.</p>
                         {% bootstrap_field form_anomalies.reference size="sm" layout="horizontal" %}
                         {% bootstrap_field form_anomalies.layer size="sm" layout="horizontal" %}
                         {% bootstrap_field form_anomalies.anomaly_year size="sm" layout="horizontal" wrapper_class="mb-3 js-cycle" %}
@@ -149,10 +198,43 @@
                         </button>
                     </div>
                 </div>
+
+                {# Outside the tabs because it works on whatever is already drawn, whichever #}
+                {# tab computed it: a hydroperiod against its anomaly, two cycles of the same #}
+                {# band, the TWI against either. Nothing here reaches Earth Engine. #}
+                <div class="hydroperiod-compare mt-3">
+                    <h3 class="h6 text-uppercase text-muted">Compare side by side</h3>
+                    <p class="small text-muted mb-2">Splits the map with a divider you drag across it,
+                        one of the layers you have added on each side.</p>
+                    <p class="small text-muted fst-italic js-compare-hint">Add two layers and they
+                        will show up here.</p>
+                    <div class="row mb-2">
+                        <label class="col-5 col-form-label-sm" for="id_compare_left">Left side</label>
+                        <div class="col-7">
+                            <select class="form-select form-select-sm js-compare-left"
+                                    id="id_compare_left"></select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label class="col-5 col-form-label-sm" for="id_compare_right">Right side</label>
+                        <div class="col-7">
+                            <select class="form-select form-select-sm js-compare-right"
+                                    id="id_compare_right"></select>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-primary btn-sm js-compare">
+                            <i class="bi bi-layout-split"></i> Compare
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm js-stop-compare d-none">
+                            Stop comparing
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {# The computation log: in the notebook app this was printed to the console. #}
-            <div class="col-lg-4">
+            <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <h3 class="h6 text-uppercase text-muted mb-0">Log</h3>
                     <button type="button" class="btn btn-link btn-sm p-0 text-muted js-clear-log">Clear</button>
