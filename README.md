@@ -68,13 +68,19 @@ python manage.py yarn install     # front-end deps, from YARN_INSTALLED_APPS in 
 python manage.py migrate
 python manage.py create_study_area "Danube Basin" data/humedales_danubio.shp \
     --boundary data/DRBD_2021.shp
+python manage.py import_elter_sites "Danube Basin" data/elter_danube.geojson
 python manage.py runserver
 ```
+
+Both loading commands are needed. The eLTER sites are a second registry attached to the
+study area the first one creates, and skipping them fails silently: with none in the
+database the panel drops the "eLTER sites" source from the dropdown altogether, so the
+app looks complete and is simply missing half its areas.
 
 Login is passwordless: enter an email and follow the link. In development
 `EMAIL_BACKEND` defaults to the console, so the link is printed to the server log.
 
-See [`data/README.md`](data/README.md) for what the shapefiles are.
+See [`data/README.md`](data/README.md) for what the two sets of source files are.
 
 ## Layout
 
