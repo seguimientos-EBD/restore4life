@@ -1,0 +1,303 @@
+{% extends 'manual/layout.html' %}
+{% load manual %}
+
+{% block title %}Connecting Earth Engine — Restore4Life{% endblock %}
+
+{% block manual_title %}Connecting your Earth Engine account{% endblock %}
+{% block manual_lead %}
+    From a bare Google account to a working connection: creating the Cloud project,
+    registering it for noncommercial use, and handing it to the application.
+{% endblock %}
+
+{% block manual_toc %}
+    <li><a href="#why">Why an account of your own</a></li>
+    <li><a href="#google-account">A Google account</a></li>
+    <li><a href="#project">The Cloud project, registered</a></li>
+    <li><a href="#api">The Earth Engine API</a></li>
+    <li><a href="#quota">How much computation you get</a></li>
+    <li><a href="#sign-in">Signing in to the application</a></li>
+    <li><a href="#connect">Connecting the project</a></li>
+    <li><a href="#disconnect">Disconnecting and reconnecting</a></li>
+    <li><a href="#trouble">When it does not work</a></li>
+{% endblock %}
+
+{% block manual_body %}
+
+<section id="why">
+    <h2>Why an account of your own</h2>
+
+    <p>Everything this application computes — hydroperiods, anomalies, terrain wetness,
+    statistics, exports — runs on Google Earth Engine. It does not run on a shared
+    institutional account: each user connects their own, and every computation is charged
+    against their own quota and runs under their own credentials.</p>
+
+    <p>That has three consequences worth knowing before you start:</p>
+
+    <ul>
+        <li>You need a Google Cloud project registered for Earth Engine. Getting one is
+        free for the research and conservation work this project does, and the whole of
+        this manual is about obtaining it.</li>
+        <li>Exports go to <strong>your</strong> Google Drive, and long-running export
+        tasks are followed from <strong>your</strong> Earth Engine task manager.</li>
+        <li>When a computation is refused for being too large, it is your project's
+        monthly allowance that is the limit — see <a href="#quota">how much computation
+        you get</a>.</li>
+    </ul>
+
+    <p>The application stores the token that lets it act on your behalf, encrypted, and
+    nothing else about your Google account. You can withdraw it at any moment from the
+    same screen that granted it.</p>
+
+    <p class="manual-note">Set aside about fifteen minutes for the whole of this the
+    first time. Once done, it is done: the connection survives signing out and is only
+    made again if you disconnect it or Google withdraws it.</p>
+</section>
+
+<section id="google-account">
+    <h2>Step 1 — A Google account</h2>
+
+    <p>Any Google account works, whether it is a personal <code>@gmail.com</code> or an
+    institutional one. If your institution runs its accounts through Google — as the
+    CSIC does — use the institutional one: eligibility for free noncommercial access is
+    judged on the organisation behind the account, and an institutional address makes
+    that case for itself.</p>
+
+    <p>One caution, and it is the source of most of the confusion later on: if you are
+    signed in to several Google accounts in the same browser, every step from here on
+    can silently land on the wrong one. Before starting, either sign out of all but one,
+    or do the whole procedure in a separate browser profile.</p>
+</section>
+
+<section id="project">
+    <h2>Step 2 — The Cloud project, registered</h2>
+
+    <p>Earth Engine works through a Google Cloud project. The project is a container and
+    a name; you are not buying anything by creating one, and no card is asked for on the
+    noncommercial path.</p>
+
+    <p>Go to <a href="https://console.cloud.google.com/earth-engine" target="_blank"
+    rel="noopener">console.cloud.google.com/earth-engine</a>. This page creates the
+    project and registers it in one pass, which is why it is worth starting here rather
+    than creating a project by hand and registering it afterwards.</p>
+
+    {% figure 'cloud-onboarding' %}
+
+    <p>If you have no project yet, create one. Give it a name you will recognise in six
+    months — <code>restore4life-yourname</code> reads better than
+    <code>my-project-84321</code> — and accept the identifier Google proposes.</p>
+
+    <p>Then work through the registration questionnaire. It decides whether the project
+    is commercial or noncommercial, and the answer for everything done with this
+    application is <strong>noncommercial</strong>.</p>
+
+    {% figure 'register-noncommercial' %}
+
+    <p>Noncommercial access covers academic research and teaching, nonprofits,
+    journalism, training, and government bodies doing scholarly research. What it does
+    not cover is fee-for-service work: producing a deliverable that a commercial or
+    government client is paying for. Consortium research, papers, reports to the project
+    and the demonstrations given at project meetings all fall comfortably inside the
+    noncommercial side of that line.</p>
+
+    <p class="manual-note">Answer the questionnaire honestly rather than conveniently.
+    Eligibility is checked against what you declare, and a project found to be
+    misregistered loses access rather than being quietly moved.</p>
+
+    <h3>Finding the project ID</h3>
+
+    <p>The application asks for the project <em>ID</em>, which is not the project
+    <em>name</em>. The name is what you typed and can contain capitals and spaces; the
+    ID is lowercase, hyphenated, unique across the whole of Google Cloud, and frequently
+    has digits stuck on the end to make it so.</p>
+
+    {% figure 'project-id' %}
+
+    <p>Copy it somewhere for step 6. If you lose it, it is on the front page of the
+    Cloud console, in the project selector at the top of every Cloud page, and in the
+    URL of most of them as <code>?project=…</code>.</p>
+</section>
+
+<section id="api">
+    <h2>Step 3 — The Earth Engine API</h2>
+
+    <p>Registering through the page above normally turns the Earth Engine API on for
+    the project by itself. It is worth knowing where the switch is anyway, because a
+    project whose API is off produces a connection that appears to succeed and then
+    fails on the first computation.</p>
+
+    {% figure 'enable-api' %}
+
+    <p>Open <a href="https://console.cloud.google.com/apis/library/earthengine.googleapis.com"
+    target="_blank" rel="noopener">the Earth Engine API in the API library</a>, check
+    that the project named at the top of the page is the right one, and enable it if the
+    button offers to. If it already reads <span class="ui">Manage</span>, the API is on
+    and there is nothing to do.</p>
+</section>
+
+<section id="quota">
+    <h2>Step 4 — How much computation you get</h2>
+
+    <p>Since April 2026 every noncommercial project has a monthly allowance of Earth
+    Engine compute units, measured in EECU-hours, and sits in one of three tiers. New
+    projects start in the first of them.</p>
+
+    <table class="table table-sm manual-table">
+        <thead>
+            <tr><th>Tier</th><th>Per month</th><th>Who it is for</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Community</strong></td>
+                <td>150 EECU-hours</td>
+                <td>Where every noncommercial project starts. Enough for learning the
+                application and for hydroperiods over single wetlands.</td>
+            </tr>
+            <tr>
+                <td><strong>Contributor</strong></td>
+                <td>1,000 EECU-hours</td>
+                <td>Still free, but the project must have a billing account attached —
+                attached, not charged. The sensible tier for real work: researchers,
+                graduate students, nonprofits.</td>
+            </tr>
+            <tr>
+                <td><strong>Partner</strong></td>
+                <td>100,000 EECU-hours</td>
+                <td>By application and manual review, for high-impact climate and
+                biodiversity work. Approval takes several weeks.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    {% figure 'tier' %}
+
+    <p>Running out does not lock you out. The project drops into a restricted mode where
+    computations still run but with less parallelism, so everything simply becomes slow.
+    The allowance resets on the first of each month, at midnight Pacific time.</p>
+
+    <p class="manual-note">If you intend to compute long Sentinel-2 series over large
+    wetlands, move to the Contributor tier before the meeting rather than during it.
+    Attaching a billing account to a noncommercial project does not cost anything, but
+    it is not something to be discovering while a room waits.</p>
+</section>
+
+<section id="sign-in">
+    <h2>Step 5 — Signing in to the application</h2>
+
+    <p>The application itself is at <a href="{{ app_url }}">{{ app_url }}</a>. It has no
+    passwords: you give an email address, it sends a link, and following the link signs
+    you in.</p>
+
+    {% figure 'sign-in' %}
+
+    <p>The address does not have to be the Google one — it identifies you to this
+    application, and has nothing to do with Earth Engine. The first time you use an
+    address it becomes your account.</p>
+
+    <p>The link is good for thirty minutes and works once. If it has expired, or if you
+    have already used it, ask for another from the same screen; there is no limit on how
+    many you request.</p>
+</section>
+
+<section id="connect">
+    <h2>Step 6 — Connecting the project</h2>
+
+    <p>Signed in and with no account connected yet, the home page carries a warning
+    saying so, and the link in it leads here. Later on, the same screen is reached from
+    the Earth Engine badge in the bar at the top of every page.</p>
+
+    <p class="manual-warning"><strong>Use Chrome, Edge or Brave for this step.</strong>
+    The authorisation flow relies on Google showing you a code to copy, and outside
+    Chromium-based browsers that page can close itself without ever displaying it. This
+    applies only to connecting; once connected, the application works in any browser.</p>
+
+    {% figure 'connect-form' %}
+
+    <p>Paste the project ID from step 2 and press <span class="ui">Start
+    connection</span>. The application then shows a link to Google's authorisation
+    page.</p>
+
+    <p>Open it, choose the Google account that owns the project, and grant the access it
+    asks for. Google finishes by showing a long authorisation code.</p>
+
+    {% figure 'authorize' %}
+
+    <p>Copy the whole code, come back to the application, paste it, and press
+    <span class="ui">Connect</span>.</p>
+
+    {% figure 'paste-code' %}
+
+    <p>The application exchanges that code with Google for a long-lived token, encrypts
+    it, and stores it against your account. The code itself is worthless afterwards and
+    expires within minutes, so there is no harm in a copy of it lingering on your
+    clipboard.</p>
+
+    {% figure 'connected' %}
+
+    <p>The badge at the top now names your project on a green ground. That is the whole
+    of it — the application is ready, and <a href="{% url 'manual' %}">the user
+    manual</a> takes over from here.</p>
+</section>
+
+<section id="disconnect">
+    <h2>Disconnecting and reconnecting</h2>
+
+    <p>The Earth Engine screen of a connected account offers a single
+    <span class="ui">Disconnect</span> button. It deletes the stored token outright: the
+    application keeps nothing, and the next computation will say there is no account
+    connected.</p>
+
+    <p>Disconnecting here does not revoke the permission on Google's side. To withdraw it
+    there as well — worth doing if you are handing the laptop on, or if the account was
+    connected by mistake — go to
+    <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">your
+    Google account's third-party access page</a> and remove the entry.</p>
+
+    <p>Reconnecting is the same procedure as the first time, and you can connect a
+    different project by disconnecting first: the application holds one project per user,
+    the one every computation runs on.</p>
+</section>
+
+<section id="trouble">
+    <h2>When it does not work</h2>
+
+    <dl class="manual-trouble">
+        <dt>“That authorization code is invalid or has expired.”</dt>
+        <dd>The commonest of them, and almost always one of three things: the code was
+        copied short of its full length, more than a few minutes passed between Google
+        issuing it and you pasting it, or it had already been used. Press
+        <span class="ui">Start connection</span> again and take a fresh one — codes are
+        single-use by design.</dd>
+
+        <dt>“The Earth Engine connection has expired, start again.”</dt>
+        <dd>The connection is spread over two page loads, and the application holds the
+        first half in your session while you are away at Google's page. Signing out,
+        clearing cookies, or leaving it for a very long time drops that half. Nothing is
+        broken; start the connection again.</dd>
+
+        <dt>Google's page never showed a code</dt>
+        <dd>Almost certainly a non-Chromium browser — Firefox and Safari are the usual
+        culprits. Repeat the step in Chrome, Edge or Brave.</dd>
+
+        <dt>“Your Earth Engine authorization has expired: connect the account again.”</dt>
+        <dd>The stored token has stopped working: the permission was revoked on the
+        Google side, the project was deleted, or the token simply aged out. Disconnect
+        and connect again.</dd>
+
+        <dt>“You have no Earth Engine account connected.”</dt>
+        <dd>Exactly what it says, and it appears when a connection was never completed or
+        has just been disconnected. Work through step 6 again.</dd>
+
+        <dt>The connection succeeded but every computation fails</dt>
+        <dd>Suspect the project rather than the connection. Check that the ID you gave is
+        the ID and not the display name, that the project is registered
+        (<a href="#project">step 2</a>), and that the Earth Engine API is enabled
+        (<a href="#api">step 3</a>).</dd>
+
+        <dt>Everything has become very slow</dt>
+        <dd>The month's allowance is likely spent, and the project is in restricted mode
+        until the first of the month. <a href="#quota">Step 4</a> covers the tiers and
+        how to move up one.</dd>
+    </dl>
+</section>
+
+{% endblock %}

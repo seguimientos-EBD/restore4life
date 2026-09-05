@@ -1,0 +1,34 @@
+{% load static assets %}
+
+{# A screenshot, the numbered circles laid over it, and the list those numbers refer #}
+{# to. The list is not decoration: in the PDF it is what carries the explanation, and #}
+{# for anyone using a screen reader it is the only thing that does. #}
+<figure class="manual-figure manual-figure-{{ figure.width }}" id="figure-{{ figure.name }}">
+    {% asset_exists figure.path as shot_taken %}
+    {% if shot_taken %}
+        <div class="manual-shot" data-figure="{{ figure.name }}">
+            <img src="{% static figure.path %}?v={% asset_mtime figure.path %}" alt="{{ figure.alt }}">
+            {% for mark in figure.marks %}
+                <span class="manual-mark" style="--mark-x: {{ mark.x }}%; --mark-y: {{ mark.y }}%"
+                      aria-hidden="true">{{ forloop.counter }}</span>
+            {% endfor %}
+        </div>
+    {% else %}
+        {# Not an error: the manual is written before its screenshots exist, and saying #}
+        {# which file is missing turns the page itself into the list of what is left. #}
+        <div class="manual-shot manual-shot-pending">
+            <p class="manual-pending-title"><i class="bi bi-camera"></i> Screenshot pending</p>
+            <p class="manual-pending-file"><code>static/{{ figure.path }}</code></p>
+            <p class="manual-pending-alt">{{ figure.alt }}.</p>
+        </div>
+    {% endif %}
+
+    <figcaption>
+        {% if figure.caption %}<p class="manual-caption">{{ figure.caption }}</p>{% endif %}
+        {% if figure.marks %}
+            <ol class="manual-keys">
+                {% for mark in figure.marks %}<li>{{ mark.text }}</li>{% endfor %}
+            </ol>
+        {% endif %}
+    </figcaption>
+</figure>

@@ -32,3 +32,14 @@ def asset_mtime(path):
         return int(os.path.getmtime(absolute))
     except OSError:
         return 0
+
+
+@register.simple_tag
+def asset_exists(path):
+    """Whether a static file is actually there.
+
+    The manual is written before its screenshots are taken, so its figures have to be
+    able to ask. Same contract as `asset_mtime`: it never raises, and a file it cannot
+    find is simply absent.
+    """
+    return bool(finders.find(path))

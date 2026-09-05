@@ -2,7 +2,13 @@ from accounts import views as accounts_views
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from generic.views import CitationView, FaqView, IndexView
+from generic.views import (
+    CitationView,
+    FaqView,
+    IndexView,
+    ManualApplicationView,
+    ManualEarthEngineView,
+)
 
 urlpatterns = [
     path('login/', accounts_views.RequestTokenView.as_view(), name="login"),
@@ -16,4 +22,6 @@ urlpatterns = [
     path('', IndexView.as_view(), name='index'),
     path('citation/', CitationView.as_view(), name='citation'),
     path('faq/', FaqView.as_view(), name='faq'),
+    path('manual/', ManualApplicationView.as_view(), name='manual'),
+    path('manual/earth-engine/', ManualEarthEngineView.as_view(), name='manual-earth-engine'),
 ]

@@ -4,7 +4,8 @@
 {% if not earthengine_account %}
     <div class="alert alert-warning text-center" role="alert">
         <p>You have not provided your Google Earth Engine credentials yet.</p>
-        <p class="mb-0"><a href="{% url 'earthengine:connect' %}" class="alert-link">Connect your account</a> to start working.</p>
+        <p class="mb-0"><a href="{% url 'earthengine:connect' %}" class="alert-link">Connect your account</a> to start working,
+        or follow <a href="{% url 'manual-earth-engine' %}" class="alert-link">the manual</a> if you do not have one yet.</p>
     </div>
 {% endif %}
 <h2 class="h4 mb-3">Study areas</h2>
