@@ -186,6 +186,8 @@
     so what you are watching is the computation happening, not an image being
     downloaded.</p>
 
+    {% figure 'hydroperiod-map' %}
+
     <table class="table table-sm manual-table">
         <thead><tr><th>Layer</th><th>What it is</th></tr></thead>
         <tbody>
@@ -206,6 +208,23 @@
                 the whole period. It summarises the period rather than one cycle.</td></tr>
         </tbody>
     </table>
+
+    <h3>How the days are counted</h3>
+
+    <p>A cycle is counted from the scenes that survive the cloud filter, and those are
+    never evenly spaced: a run of cloudy weeks leaves a gap, a good spell leaves several
+    scenes days apart. Rather than treat every scene as one observation, each is made to
+    answer for the stretch of time around it. The boundary between two consecutive
+    scenes falls halfway between them, and the first and last scenes reach out to the
+    start and the end of the cycle.</p>
+
+    {% figure 'hydroperiod-scheme' %}
+
+    <p>A pixel a scene sees as water is credited with all the days that scene stands
+    for, and the same weighting counts the days the pixel was observed at all. That
+    second total is what <strong>Normalized hydroperiod</strong> divides by, which is
+    why it is comparable between pixels that were seen very different numbers of
+    times.</p>
 
     <p class="manual-note">Blank ground inside the wetland has not been forgotten.
     Hydroperiod products are masked to pixels that held water at some point during the
@@ -246,6 +265,8 @@
     <p>You can draw either the reference mean itself or the anomaly of one cycle against
     it. Anomalies run from &minus;180 to +180 days: blue where the cycle was wetter than
     the reference, red where it was drier.</p>
+
+    {% figure 'anomalies-map' %}
 </section>
 
 <section id="twi">
