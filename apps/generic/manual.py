@@ -377,7 +377,8 @@ APPLICATION = {
             'halfway between them, and the days each scene is credited with',
         caption='How the days are counted. Scenes are not evenly spaced, so each one is made '
                 'to answer for the stretch of time around it, out to the halfway point with '
-                'the scene before and the scene after.',
+                'the scene before and the scene after. The diagram, and the method, are '
+                'Phydroperiod\'s (García Díaz & Bustamante Díaz, EBD-CSIC).',
     ),
     'layer-bar': Figure(
         name='layer-bar',

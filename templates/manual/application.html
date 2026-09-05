@@ -162,6 +162,45 @@
     and its shadow-suppressing variant help where terrain shadow is being confused with
     water; WI2015 is a tuned alternative. MODIS offers only MNDWI and NDWI.</p>
 
+    <p>None of them is this project's invention. Each is a published index, and the
+    paper is worth reading before trusting one over another on ground you do not
+    know:</p>
+
+    <table class="table table-sm manual-table">
+        <thead><tr><th>Index</th><th>Where it comes from</th></tr></thead>
+        <tbody>
+            <tr><td><strong>NDWI</strong></td>
+                <td>McFeeters, S. K. (1996). The use of the Normalized Difference Water
+                Index (NDWI) in the delineation of open water features.
+                <em>International Journal of Remote Sensing</em>, 17(7), 1425–1432.
+                <a href="https://doi.org/10.1080/01431169608948714" target="_blank"
+                   rel="noopener">doi:10.1080/01431169608948714</a></td></tr>
+            <tr><td><strong>MNDWI</strong></td>
+                <td>Xu, H. (2006). Modification of normalised difference water index
+                (NDWI) to enhance open water features in remotely sensed imagery.
+                <em>International Journal of Remote Sensing</em>, 27(14), 3025–3033.
+                <a href="https://doi.org/10.1080/01431160600589179" target="_blank"
+                   rel="noopener">doi:10.1080/01431160600589179</a></td></tr>
+            <tr><td><strong>AWEI</strong><br><strong>AWEI-nsh</strong></td>
+                <td>Feyisa, G. L., Meilby, H., Fensholt, R., &amp; Proud, S. R. (2014).
+                Automated Water Extraction Index: A new technique for surface water
+                mapping using Landsat imagery. <em>Remote Sensing of Environment</em>,
+                140, 23–35.
+                <a href="https://doi.org/10.1016/j.rse.2013.08.029" target="_blank"
+                   rel="noopener">doi:10.1016/j.rse.2013.08.029</a></td></tr>
+            <tr><td><strong>WI2015</strong></td>
+                <td>Fisher, A., Flood, N., &amp; Danaher, T. (2016). Comparing Landsat
+                water index methods for automated water classification in eastern
+                Australia. <em>Remote Sensing of Environment</em>, 175, 167–182.
+                <a href="https://doi.org/10.1016/j.rse.2015.12.055" target="_blank"
+                   rel="noopener">doi:10.1016/j.rse.2015.12.055</a></td></tr>
+        </tbody>
+    </table>
+
+    <p class="manual-note">The thresholds these papers propose were tuned on the
+    landscapes each was written about. Zero is a reasonable place to start, not a value
+    any of them guarantees for the Danube.</p>
+
     <p>The threshold is the value above which a pixel counts as water. Zero is the usual
     starting point: raise it if dry ground is being flagged as flooded, lower it if
     shallow water is being missed. It is worth checking one cycle you know well before
@@ -225,6 +264,15 @@
     second total is what <strong>Normalized hydroperiod</strong> divides by, which is
     why it is comparable between pixels that were seen very different numbers of
     times.</p>
+
+    <p>This is not a method invented for this application. It comes from
+    <a href="https://pypi.org/project/phydroperiod/" target="_blank" rel="noopener">
+    <strong>Phydroperiod</strong></a>, a Python package by Diego García Díaz and Javier
+    Bustamante Díaz (EBD-CSIC) written to compute hydroperiods from water masks over
+    Doñana. <a href="https://github.com/Digdgeo/Ndvi2Gif" target="_blank"
+    rel="noopener">ndvi2gif</a> carries the same midpoint weighting, generalised to run
+    anywhere on Earth Engine, and that is what this application calls. The diagram above
+    is Phydroperiod's own.</p>
 
     <p class="manual-note">Blank ground inside the wetland has not been forgotten.
     Hydroperiod products are masked to pixels that held water at some point during the
