@@ -180,18 +180,13 @@ body {
     }
 }
 
-// All that is left of the band that used to carry the logos: a rule of colour between
-// the header and the navigation.
-.accent-strip {
-    height: 5px;
-    background-color: $r4l-pale-green;
-    // The body is a flex column and the page overflows it, so anything with no content
-    // of its own to hold it open gets shrunk away to nothing.
-    flex: 0 0 auto;
-}
-
 .navbar {
     background-color: $r4l-teal;
+    // Leaflet stacks its controls at z-index 1000, the same height Bootstrap gives an
+    // open dropdown, and the map comes later in the document: without this the Help
+    // menu unrolls behind the map.
+    position: relative;
+    z-index: 1100;
 
     .nav-link {
         color: rgba($white, .85);
@@ -838,7 +833,6 @@ $manual-measure: 46rem;  // ~85 characters at this size, which is where prose re
     // Everything that exists to navigate a website: on paper it is either useless or
     // actively misleading.
     .brand-header,
-    .accent-strip,
     .navbar,
     .manual-toc,
     body > footer,
