@@ -32,6 +32,8 @@
         {% else %}
             <p>Connect your own Google Earth Engine account by giving the Google Cloud project that has
             the Earth Engine API enabled.</p>
+            <p class="text-muted">Do not have one yet? <a href="{% url 'manual-earth-engine' %}">The manual
+            walks through it</a>, from creating the project to pasting the code back here.</p>
             <form method="post" action="{% url 'earthengine:connect' %}">
                 {% csrf_token %}
                 {% bootstrap_form form %}

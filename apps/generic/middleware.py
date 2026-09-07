@@ -10,9 +10,14 @@ EXEMPT_PATH_PREFIXES = (
 )
 
 
+# The manuals are public. The first of them explains how to obtain the account, so
+# hiding it behind that same account would be a locked door with the key inside; and it
+# is what gets handed round at project meetings, where nobody has signed in yet.
 EXEMPT_URL_NAMES = (
     settings.LOGIN_URL,
     'register',
+    'manual',
+    'manual-earth-engine',
 )
 
 

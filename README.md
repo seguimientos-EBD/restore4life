@@ -56,6 +56,7 @@ DEBUG=True                        # defaults to False
 STATIC_ROOT=/path/to/staticfiles  # defaults to None; sass_processor writes the compiled CSS here
 MEDIA_ROOT=/path/to/media
 EE_TOKEN_ENCRYPTION_KEY=...       # Fernet key: Fernet.generate_key()
+APP_URL=https://restore4life.icts-donana.es   # defaults to this; the manuals print it
 DATABASE_NAME=restore4life
 DATABASE_USER=...
 DATABASE_PASSWORD=...
@@ -89,11 +90,47 @@ apps/areas/        StudyArea and Wetland, the map's GeoJSON endpoints
 apps/hydroperiod/  the panel: tiles, zonal statistics, Drive exports, pixel inspector
 apps/earthengine/  per-user OAuth against Earth Engine, encrypted token storage
 apps/accounts/     email-link authentication
-apps/generic/      landing page, FAQ, citation, login-required middleware
+apps/generic/      landing page, FAQ, citation, manuals, login-required middleware
 static/js/areas.js       owns the map: basemaps, layer switcher, drawing tools
 static/js/hydroperiod.js owns the panel and the layers it puts on the map
+templates/manual/  the two manuals; their figures live in apps/generic/manual.py
 diego/             the original notebook app, for reference
 ```
+
+## Manuals
+
+Two of them, public so that they can be read before there is an account to read them
+with — the first is about how to get one:
+
+- `/manual/earth-engine/` — creating the Cloud project and connecting it.
+- `/manual/` — using the application.
+
+Each is a page of the site and a PDF printed from that same page, so there is one
+source and no second copy to fall out of step. Both are linked from the *Help* menu.
+
+**Screenshots** go in `static/img/manual/` under the name their figure declares. A
+figure whose file is not there draws a placeholder naming it, so the pages themselves
+are the list of what is still to capture — open them and look for the dashed boxes.
+
+**The numbered marks** on each screenshot live in `apps/generic/manual.py`, as
+percentages of the image. To find those numbers rather than guess them, open a manual
+with `?markers=1` and click where a mark belongs: the line to paste is printed at the
+foot of the window and copied to the clipboard.
+
+Whole-window screenshots want the full column width, which is the default. Use
+`width='narrow'` only for a cropped panel or dialog: a whole window shrunk into that
+column stops being legible, which is the one thing a screenshot has to be.
+
+**The PDFs** are built artefacts and are committed, because the site serves them from
+`static/` and the deploy does not run a browser. Regenerate them after adding
+screenshots, against a running server:
+
+```bash
+python manage.py runserver 8000
+scripts/build_manual_pdfs.sh          # or against another host: scripts/build_manual_pdfs.sh https://…
+```
+
+Until a PDF exists, its page simply does not offer the download.
 
 ## How it fits together
 

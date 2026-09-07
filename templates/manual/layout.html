@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static assets %}
+
+{# Shared shape of both manuals: a cover, a contents list beside the text on screen, #}
+{# and the same document again as a PDF. One source for the two, because a manual kept #}
+{# twice is a manual that disagrees with itself by the second correction. #}
+
+{% block head %}
+    <script src="{% static 'js/manual.js' %}?v={% asset_mtime 'js/manual.js' %}" defer></script>
+{% endblock %}
+
+{% block container_size %}container-xxl pt-3 manual{% endblock container_size %}
+
+{% block content %}
+{# The cover is the first page of the PDF. On screen it is simply the page heading, #}
+{# which is why it carries the title rather than repeating it below. #}
+<header class="manual-cover">
+    <img src="{% static 'img/restore4life_mark.png' %}" alt="" class="manual-cover-mark">
+    <p class="manual-cover-project">Restore4Life — Danube Wetlands HydroApp</p>
+    <h1 class="manual-cover-title">{% block manual_title %}{% endblock %}</h1>
+    <p class="manual-cover-lead">{% block manual_lead %}{% endblock %}</p>
+    <p class="manual-cover-url">{{ app_url }}</p>
+</header>
+
+<div class="row g-4 manual-body">
+    <nav class="col-lg-3 manual-toc" aria-label="Contents">
+        <div class="manual-toc-inner">
+            <h2 class="h6 text-uppercase text-muted">Contents</h2>
+            <ol>{% block manual_toc %}{% endblock %}</ol>
+
+            {% if pdf %}
+                {# Only offered once the file is there: a manual is regenerated after the #}
+                {# screenshots are taken, and a button leading to a 404 is worse than none. #}
+                <a class="btn btn-sm btn-outline-primary mt-3 manual-pdf-link"
+                   href="{% static pdf %}?v={% asset_mtime pdf %}" download>
+                    <i class="bi bi-file-earmark-pdf"></i> Download as PDF
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="col-lg-9 manual-text">
+        {% block manual_body %}{% endblock %}
+
+        <footer class="manual-footer">
+            <p>Restore4Life — Danube Wetlands HydroApp. Doñana Biological Station (EBD-CSIC),
+            Remote Sensing and GIS Laboratory (LAST-EBD).</p>
+            <p>Questions and corrections: <a href="{% url 'faq' %}">the FAQ</a> answers the
+            recurring ones.</p>
+        </footer>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,528 @@
+{% extends 'manual/layout.html' %}
+{% load manual %}
+
+{% block title %}User manual — Restore4Life{% endblock %}
+
+{% block manual_title %}Using the HydroApp{% endblock %}
+{% block manual_lead %}
+    Choosing an area, computing hydroperiods, anomalies and terrain wetness over it,
+    measuring the result and taking it away.
+{% endblock %}
+
+{% block manual_toc %}
+    <li><a href="#idea">What the application computes</a></li>
+    <li><a href="#home">Study areas</a></li>
+    <li><a href="#workspace">The workspace</a></li>
+    <li><a href="#area">Choosing the area</a></li>
+    <li><a href="#series">The time series</a></li>
+    <li><a href="#hydroperiod">Hydroperiod</a></li>
+    <li><a href="#layers">Layers on the map</a></li>
+    <li><a href="#anomalies">Anomalies</a></li>
+    <li><a href="#twi">Terrain wetness</a></li>
+    <li><a href="#stats">Statistics</a></li>
+    <li><a href="#export">Exporting</a></li>
+    <li><a href="#tools">Reading and comparing</a></li>
+    <li><a href="#log">The log</a></li>
+    <li><a href="#walkthrough">A worked example</a></li>
+    <li><a href="#limits">Limits and errors</a></li>
+{% endblock %}
+
+{% block manual_body %}
+
+<section id="idea">
+    <h2>What the application computes</h2>
+
+    <p>The <strong>hydroperiod</strong> of a pixel is the number of days it held surface
+    water during one hydrological year. It is a different question from the one a
+    satellite image answers. An image says whether there was water on the day the
+    satellite passed; the hydroperiod says how long the water stayed, which is the
+    quantity that governs what can live in a wetland.</p>
+
+    <p>It is built by classifying every usable observation in the year as water or not
+    water — using a water index and a threshold — and counting.</p>
+
+    <h3>Why the year starts in September</h3>
+
+    <p>A calendar year cuts a flooding cycle in half. The application therefore works in
+    hydrological years running from 1 September to 1 September, and a cycle written
+    <strong>2021/2022</strong> begins on 1 September 2021.</p>
+
+    <p>One consequence catches everyone once: the most recent cycle you can compute is
+    not last year's. Between January and August, the cycle that began last September is
+    still open and its flooded days do not yet add up to a year. The application knows
+    this and opens on the last cycle that has actually closed.</p>
+
+    <h3>What it needs from you</h3>
+
+    <p>A connected Earth Engine account, which
+    <a href="{% url 'manual-earth-engine' %}">the first manual</a> covers. Everything
+    below assumes the badge at the top of the page is green.</p>
+</section>
+
+<section id="home">
+    <h2>Study areas</h2>
+
+    <p>The home page lists the study areas. A study area is a group of wetlands together
+    with the outline the map frames itself on and refuses to pan outside — for this
+    project, the Danube basin.</p>
+
+    {% figure 'home' %}
+
+    <p>Each area holds two registries of sites, which behave identically once you are
+    working: the <strong>Ramsar wetlands</strong> of the basin, and the
+    <strong>eLTER sites</strong> that intersect it. They are drawn differently on the
+    map and offered under different headings, but anything the application does with one
+    it does with the other.</p>
+</section>
+
+<section id="workspace">
+    <h2>The workspace</h2>
+
+    <p>Opening a study area gives you the working surface: the control panel on the
+    left, the map on the right, and a log along the bottom of the panel. On a narrower
+    screen the two stack, panel first.</p>
+
+    {% figure 'workspace' %}
+
+    <p>The panel is one form serving five tabs. The block at the top — the area, and the
+    time series settings under it — is shared: it feeds every tab that needs it. The
+    tabs below choose which product is built from it.</p>
+
+    <p class="manual-note">Nothing is remembered between requests. Each time you add a
+    layer the application rebuilds the whole computation from what the panel currently
+    says. This is why changing a setting and pressing the button again is always safe,
+    and why there is no notion of a session to lose.</p>
+</section>
+
+<section id="area">
+    <h2>Choosing the area</h2>
+
+    <p>Everything computes over one area, chosen in two steps: first where it comes
+    from, then which one.</p>
+
+    {% figure 'area-source' %}
+
+    <p>Picking a wetland or an eLTER site also frames the map on it. Only one of the two
+    dropdowns is ever active, so the application is never sent two answers to the same
+    question.</p>
+
+    <h3>Drawing an area</h3>
+
+    <p>The third source is a shape of your own. Choose <span class="ui">Draw on the
+    map</span> and use the polygon or rectangle tool at the left edge of the map.</p>
+
+    {% figure 'draw' %}
+
+    <p>A drawn shape <strong>overrides</strong> whatever the dropdowns hold. Drawing is
+    the more deliberate act of the two — a wetland may simply be left over in the
+    dropdown from an earlier run — so the application prefers it. Delete the drawing
+    with the same tools and the choice returns to the dropdown.</p>
+
+    <p>Drawings are meant to be drawn: the application refuses a shape with more than
+    5,000 vertices, which no hand-drawn polygon approaches and no imported coastline
+    stays below.</p>
+</section>
+
+<section id="series">
+    <h2>The time series</h2>
+
+    <p>These six settings define the series that the hydroperiod and the anomalies are
+    computed from. The terrain wetness index ignores them entirely.</p>
+
+    {% figure 'time-series' %}
+
+    <h3>Sensor</h3>
+
+    <p>A trade between detail and depth of record. Changing it rewrites what the other
+    fields accept, so choose it first.</p>
+
+    <table class="table table-sm manual-table">
+        <thead><tr><th>Sensor</th><th>Pixel</th><th>From</th><th>Use it for</th></tr></thead>
+        <tbody>
+            <tr><td>Sentinel-2</td><td>10 m</td><td>2017</td>
+                <td>The best detail there is. The default, and the right choice for a
+                single wetland over a handful of years.</td></tr>
+            <tr><td>Landsat</td><td>30 m</td><td>1984</td>
+                <td>The only option for long-term change. Four decades of record.</td></tr>
+            <tr><td>MODIS</td><td>500 m</td><td>2000</td>
+                <td>Coarse, but cheap over very large areas where 10 m would not
+                compute at all.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Period</h3>
+
+    <p>Start and end year, in hydrological years. Asking for a year the sensor does not
+    reach is refused with a message saying so rather than quietly returning less.</p>
+
+    <h3>Water index and threshold</h3>
+
+    <p>The index turns reflectance into a single number that is high over water.
+    <strong>MNDWI</strong> is the sensible default and works on all three sensors. AWEI
+    and its shadow-suppressing variant help where terrain shadow is being confused with
+    water; WI2015 is a tuned alternative. MODIS offers only MNDWI and NDWI.</p>
+
+    <p>None of them is this project's invention. Each is a published index, and the
+    paper is worth reading before trusting one over another on ground you do not
+    know:</p>
+
+    <table class="table table-sm manual-table">
+        <thead><tr><th>Index</th><th>Where it comes from</th></tr></thead>
+        <tbody>
+            <tr><td><strong>NDWI</strong></td>
+                <td>McFeeters, S. K. (1996). The use of the Normalized Difference Water
+                Index (NDWI) in the delineation of open water features.
+                <em>International Journal of Remote Sensing</em>, 17(7), 1425–1432.
+                <a href="https://doi.org/10.1080/01431169608948714" target="_blank"
+                   rel="noopener">doi:10.1080/01431169608948714</a></td></tr>
+            <tr><td><strong>MNDWI</strong></td>
+                <td>Xu, H. (2006). Modification of normalised difference water index
+                (NDWI) to enhance open water features in remotely sensed imagery.
+                <em>International Journal of Remote Sensing</em>, 27(14), 3025–3033.
+                <a href="https://doi.org/10.1080/01431160600589179" target="_blank"
+                   rel="noopener">doi:10.1080/01431160600589179</a></td></tr>
+            <tr><td><strong>AWEI</strong><br><strong>AWEI-nsh</strong></td>
+                <td>Feyisa, G. L., Meilby, H., Fensholt, R., &amp; Proud, S. R. (2014).
+                Automated Water Extraction Index: A new technique for surface water
+                mapping using Landsat imagery. <em>Remote Sensing of Environment</em>,
+                140, 23–35.
+                <a href="https://doi.org/10.1016/j.rse.2013.08.029" target="_blank"
+                   rel="noopener">doi:10.1016/j.rse.2013.08.029</a></td></tr>
+            <tr><td><strong>WI2015</strong></td>
+                <td>Fisher, A., Flood, N., &amp; Danaher, T. (2016). Comparing Landsat
+                water index methods for automated water classification in eastern
+                Australia. <em>Remote Sensing of Environment</em>, 175, 167–182.
+                <a href="https://doi.org/10.1016/j.rse.2015.12.055" target="_blank"
+                   rel="noopener">doi:10.1016/j.rse.2015.12.055</a></td></tr>
+        </tbody>
+    </table>
+
+    <p class="manual-note">The thresholds these papers propose were tuned on the
+    landscapes each was written about. Zero is a reasonable place to start, not a value
+    any of them guarantees for the Danube.</p>
+
+    <p>The threshold is the value above which a pixel counts as water. Zero is the usual
+    starting point: raise it if dry ground is being flagged as flooded, lower it if
+    shallow water is being missed. It is worth checking one cycle you know well before
+    trusting a whole series.</p>
+
+    <h3>Maximum cloud cover</h3>
+
+    <p>Scenes cloudier than this are dropped before anything is computed. Twenty per cent
+    is a reasonable default. Raising it admits more observations at the cost of their
+    quality; lowering it can leave parts of a wet season with nothing to count.</p>
+</section>
+
+<section id="hydroperiod">
+    <h2>Hydroperiod</h2>
+
+    <p>The first tab, and the one the others build on. Choose which layer of the result
+    to draw and which cycle to draw it for, then press <span class="ui">Add data</span>.</p>
+
+    {% figure 'hydroperiod-tab' %}
+
+    <p>The picture fills in gradually. Earth Engine computes as the map asks for tiles,
+    so what you are watching is the computation happening, not an image being
+    downloaded.</p>
+
+    {% figure 'hydroperiod-map' %}
+
+    <table class="table table-sm manual-table">
+        <thead><tr><th>Layer</th><th>What it is</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Normalized hydroperiod</strong></td>
+                <td>Flooded days, corrected for how many valid observations the pixel
+                actually had. The one to open on: it is comparable between pixels and
+                between years, which the raw count is not.</td></tr>
+            <tr><td><strong>Hydroperiod</strong></td>
+                <td>Flooded days, counted raw.</td></tr>
+            <tr><td><strong>Days with valid data</strong></td>
+                <td>How many cloud-free observations backed the estimate. Low values
+                mean the hydroperiod there is poorly constrained — read this layer
+                before trusting an odd-looking result.</td></tr>
+            <tr><td><strong>First / last flood day</strong></td>
+                <td>When flooding began and ended, as day of year.</td></tr>
+            <tr><td><strong>IRT</strong></td>
+                <td>Temporal regularity, 0 to 1: how consistently a pixel floods across
+                the whole period. It summarises the period rather than one cycle.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>How the days are counted</h3>
+
+    <p>A cycle is counted from the scenes that survive the cloud filter, and those are
+    never evenly spaced: a run of cloudy weeks leaves a gap, a good spell leaves several
+    scenes days apart. Rather than treat every scene as one observation, each is made to
+    answer for the stretch of time around it. The boundary between two consecutive
+    scenes falls halfway between them, and the first and last scenes reach out to the
+    start and the end of the cycle.</p>
+
+    {% figure 'hydroperiod-scheme' %}
+
+    <p>A pixel a scene sees as water is credited with all the days that scene stands
+    for, and the same weighting counts the days the pixel was observed at all. That
+    second total is what <strong>Normalized hydroperiod</strong> divides by, which is
+    why it is comparable between pixels that were seen very different numbers of
+    times.</p>
+
+    <p>This is not a method invented for this application. It comes from
+    <a href="https://pypi.org/project/phydroperiod/" target="_blank" rel="noopener">
+    <strong>Phydroperiod</strong></a>, a Python package by Diego García Díaz and Javier
+    Bustamante Díaz (EBD-CSIC) written to compute hydroperiods from water masks over
+    Doñana. <a href="https://github.com/Digdgeo/Ndvi2Gif" target="_blank"
+    rel="noopener">ndvi2gif</a> carries the same midpoint weighting, generalised to run
+    anywhere on Earth Engine, and that is what this application calls. The diagram above
+    is Phydroperiod's own.</p>
+
+    <p class="manual-note">Blank ground inside the wetland has not been forgotten.
+    Hydroperiod products are masked to pixels that held water at some point during the
+    period; ground that never flooded is left undrawn rather than painted as zero.</p>
+</section>
+
+<section id="layers">
+    <h2>Layers on the map</h2>
+
+    <p>Every layer you add stays on the map and appears twice: in the layer switcher at
+    the top-right corner, and in the bar under the map.</p>
+
+    {% figure 'layer-bar' %}
+
+    <p>Layers are named after what they are <em>and</em> the area they were computed
+    over, because with several up the product alone does not tell one run from another.
+    Add the same product for two cycles and you get two layers, ready to
+    <a href="#tools">compare</a>.</p>
+</section>
+
+<section id="anomalies">
+    <h2>Anomalies</h2>
+
+    <p>How unusual a cycle was, in days above or below a reference mean.</p>
+
+    {% figure 'anomalies-tab' %}
+
+    <p>The reference is the choice that matters:</p>
+
+    <ul>
+        <li><strong>Mean of the selected period</strong> — the average of the years you
+        asked for. Answers “was this year unusual <em>for this period</em>?”</li>
+        <li><strong>Historical mean</strong> — the average of the sensor's entire
+        archive. Answers “was this year unusual, full stop?”, and is considerably more
+        expensive to compute.</li>
+    </ul>
+
+    <p>You can draw either the reference mean itself or the anomaly of one cycle against
+    it. Anomalies run from &minus;180 to +180 days: blue where the cycle was wetter than
+    the reference, red where it was drier.</p>
+
+    {% figure 'anomalies-map' %}
+</section>
+
+<section id="twi">
+    <h2>Terrain wetness</h2>
+
+    <p>The topographic wetness index, TWI = ln(<em>a</em> / tan&nbsp;β), where <em>a</em>
+    is the upstream drainage area per unit contour length and β the local slope. It says
+    where water <em>tends</em> to gather, from the shape of the ground alone.</p>
+
+    {% figure 'twi-tab' %}
+
+    <p>It uses neither the sensor nor the period beside it, so it is the same layer
+    whatever those say. Two elevation models are offered: MERIT Hydro at about 90 m,
+    internally consistent, and a 30 m hybrid that sharpens the slope with NASADEM. In
+    the hybrid the flow accumulation still comes from MERIT at about 90 m — proper sink
+    filling and flow routing at 30 m is not practical on Earth Engine, and claiming 30 m
+    for the whole index would be claiming more than it delivers.</p>
+</section>
+
+<section id="stats">
+    <h2>Statistics</h2>
+
+    <p>Measures any product over points or polygons of your own. It measures what the
+    other tabs are set to produce, so the numbers are of exactly the layer you have been
+    looking at.</p>
+
+    {% figure 'stats-tab' %}
+
+    <p>Upload a <code>.geojson</code>, <code>.json</code> or zipped shapefile, up to
+    20 MB. The application works out for itself whether it holds points or polygons and
+    which column carries the name.</p>
+
+    <ul>
+        <li><strong>Points</strong> give the value of the pixel each one falls in.</li>
+        <li><strong>Polygons</strong> give mean, median, minimum, maximum, standard
+        deviation and pixel count.</li>
+    </ul>
+
+    <p>Leave the scale empty to sample at the product's own resolution — 10 m for
+    Sentinel-2, 30 m for Landsat, 500 m for MODIS, 90 m for TWI.</p>
+
+    {% figure 'stats-table' %}
+
+    <p>The table appears under the map, where it has the width to be read, and survives
+    switching tabs. <span class="ui">Download CSV</span> saves exactly those rows
+    directly, without involving Drive.</p>
+
+    <p class="manual-note"><span class="ui">Compute stats</span> waits for Earth Engine
+    and is capped at 1,000 features — past that the honest answer is a Drive export
+    rather than a request that times out. <span class="ui">Send to Drive</span> hands
+    the same job to Earth Engine as a CSV and returns immediately, and is the way to do
+    anything larger.</p>
+</section>
+
+<section id="export">
+    <h2>Exporting</h2>
+
+    <p>Exports produce GeoTIFFs in your own Google Drive, computed on your own Earth
+    Engine account.</p>
+
+    {% figure 'export-tab' %}
+
+    <p>There are two quite different jobs behind the one tab:</p>
+
+    <ul>
+        <li><strong>Every hydrological cycle of the period</strong> — one file per cycle,
+        named <code>hydroperiod_&lt;area&gt;_&lt;year&gt;_&lt;year+1&gt;</code>, each
+        carrying all the bands of that cycle.</li>
+        <li><strong>Only the product currently selected</strong> — a single file of
+        whatever one layer you name: a TWI, an anomaly, one band of one cycle.</li>
+    </ul>
+
+    <p>Exports are queued, not waited for. The application returns as soon as Earth
+    Engine accepts the tasks and names them in the log; Earth Engine runs them on its own
+    time, and the files appear in Drive later. Progress is followed from
+    <a href="https://code.earthengine.google.com/tasks" target="_blank" rel="noopener">the
+    Earth Engine task manager</a>, not from here.</p>
+
+    <p class="manual-note">One thing to know before opening the files in QGIS: inside a
+    per-cycle GeoTIFF the IRT band is stored as thousandths in a whole number, because
+    Earth Engine will not export bands of different types in one file. Divide that band
+    by 1,000 to get back the 0–1 value the map shows. The other bands are day counts and
+    need nothing done to them.</p>
+</section>
+
+<section id="tools">
+    <h2>Reading and comparing</h2>
+
+    <h3>Reading a value</h3>
+
+    <p>The button below the drawing tools turns the map into a value reader: the pointer
+    becomes a crosshair, and a click asks what the layer says at that point instead of
+    panning.</p>
+
+    {% figure 'inspector' %}
+
+    <p>It reads the layer that is <em>drawn</em>, not whatever the panel happens to have
+    selected by the time you click — the browser sends back the very settings that
+    produced the layer you are looking at.</p>
+
+    <h3>Comparing two layers</h3>
+
+    <p>Add two layers, then split the map between them with a divider you drag across.
+    A hydroperiod against its anomaly, two cycles of the same band, the TWI against
+    either.</p>
+
+    {% figure 'compare' %}
+
+    <p>Nothing here goes back to Earth Engine: both layers are already on the map, so
+    the curtain is instant. Removing either layer ends the comparison and says so in the
+    log.</p>
+
+    <h3>The map itself</h3>
+
+    <p>The switcher at the top-right corner carries the basemaps and every layer you have
+    added, each of which can be turned off without being removed. The map opens framed on
+    the study area outline and will not pan outside it. Fullscreen is worth knowing about
+    when showing the application to a room.</p>
+</section>
+
+<section id="log">
+    <h2>The log</h2>
+
+    <p>The strip at the foot of the panel narrates every request: what was asked of Earth
+    Engine, over which area, and what came back.</p>
+
+    {% figure 'log' %}
+
+    <p>It is the first place to look when something does not appear. Errors are in red
+    and are written to say what to change — which cycle is outside the period, which
+    file is missing, which computation was too large — rather than only that something
+    failed. <span class="ui">Clear</span> empties it; nothing else does.</p>
+</section>
+
+<section id="walkthrough">
+    <h2>A worked example</h2>
+
+    <p>End to end, the way it would be demonstrated: how flooded were the Braila Islands
+    over the last five cycles, and was the most recent one unusual?</p>
+
+    <ol class="manual-walkthrough">
+        <li>Open the Danube Basin study area from the home page.</li>
+        <li>Set <span class="ui">Area source</span> to <span class="ui">Ramsar
+        wetlands</span> and pick the wetland. The map frames it.</li>
+        <li>Leave the sensor on Sentinel-2 and the period on the five cycles it opens
+        with. Leave MNDWI and a threshold of 0.</li>
+        <li>On the <span class="ui">Hydroperiod</span> tab, leave the layer on
+        <span class="ui">Normalized hydroperiod</span>, choose the most recent cycle, and
+        press <span class="ui">Add data</span>. Watch it fill in.</li>
+        <li>Turn on the value reader and click a few pixels — a permanent lake, a
+        seasonal margin, a field outside — to get a feel for the numbers behind the
+        colours.</li>
+        <li>Switch to <span class="ui">Anomalies</span>, keep the reference on
+        <span class="ui">Mean of the selected period</span>, and add the anomaly for the
+        same cycle. Blue is wetter than the five-year mean, red is drier.</li>
+        <li>In <span class="ui">Compare side by side</span>, put the hydroperiod on the
+        left and the anomaly on the right, and drag the divider across.</li>
+        <li>To take it away: <span class="ui">Export</span> tab, every cycle of the
+        period, 10 m, and <span class="ui">Start export</span>. Five tasks are queued and
+        named in the log; the files arrive in Drive shortly afterwards.</li>
+    </ol>
+
+    <p>That is roughly a five-minute demonstration, and every step of it is one the
+    audience can repeat on their own account.</p>
+</section>
+
+<section id="limits">
+    <h2>Limits and errors</h2>
+
+    <dl class="manual-trouble">
+        <dt>“The computation does not fit in Earth Engine.”</dt>
+        <dd>Earth Engine refused it for size. Shorten the period, choose a coarser
+        sensor, or work on a smaller area. Long periods over large wetlands at 10 m are
+        the usual cause, and the historical anomaly reference is the most expensive
+        thing the application can be asked for.</dd>
+
+        <dt>Everything has become slow</dt>
+        <dd>Your project's monthly Earth Engine allowance is probably spent, which puts
+        it into a restricted mode rather than cutting it off. It resets on the first of
+        the month; <a href="{% url 'manual-earth-engine' %}#quota">the first manual</a>
+        covers the tiers.</dd>
+
+        <dt>“Your Earth Engine authorization has expired.”</dt>
+        <dd>The stored token has stopped working. Reconnect the account from the badge at
+        the top of the page.</dd>
+
+        <dt>The layer covers only part of the wetland</dt>
+        <dd>Working as intended: only pixels that held water at some point in the period
+        are drawn. Ground that never flooded is left blank rather than painted as zero.</dd>
+
+        <dt>The layer looks wrong, or far too dry</dt>
+        <dd>Check <span class="ui">Days with valid data</span> for the same cycle. Few
+        valid observations — a cloudy season, a cloud limit set too low — makes a
+        hydroperiod that is poorly constrained rather than wrong. After that, suspect the
+        threshold.</dd>
+
+        <dt>“The chosen cycle falls outside the period.”</dt>
+        <dd>The cycle asked for is not among those the period covers. Widen the period or
+        pick a cycle inside it.</dd>
+
+        <dt>The statistics refuse to run</dt>
+        <dd>Above 1,000 features they will not be computed while you wait. Use
+        <span class="ui">Send to Drive</span>.</dd>
+
+        <dt>Nothing happens when I press a button</dt>
+        <dd>Read the log. An area that was never chosen, a file that was never uploaded
+        and a map that has not finished loading all say so there.</dd>
+    </dl>
+</section>
+
+{% endblock %}

@@ -25,6 +25,10 @@ EE_TOKEN_ENCRYPTION_KEY = config('EE_TOKEN_ENCRYPTION_KEY')
 
 AUTH_USER_MODEL = 'accounts.User'
 
+# Where the application answers from. The manual has to print it: much of its
+# audience meets it as a PDF, with no address bar to read it out of.
+APP_URL = config('APP_URL', default='https://restore4life.icts-donana.es')
+
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
