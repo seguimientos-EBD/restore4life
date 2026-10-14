@@ -29,6 +29,11 @@ AUTH_USER_MODEL = 'accounts.User'
 # audience meets it as a PDF, with no address bar to read it out of.
 APP_URL = config('APP_URL', default='https://restore4life.icts-donana.es')
 
+# Concept DOI of the archived software, which resolves to whichever release is
+# latest. Empty until the first release reaches Zenodo: while it is, the citation
+# page leaves the software out rather than printing a dead link.
+ZENODO_DOI = config('ZENODO_DOI', default='')
+
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"

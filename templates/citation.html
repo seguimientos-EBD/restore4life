@@ -7,15 +7,36 @@
     <div class="col-lg-9">
         <h2 class="h4 mb-4">How to cite</h2>
 
-        <p>If you use data or figures produced with this application, please cite both the
-        application and the computation library behind it.</p>
+        <p>If you use data or figures produced with this application, please cite the service that
+        produced them and the computation library behind it. There are two ways to cite the
+        application itself, and they are not alternatives: they name different things, so which one
+        you want depends on what your work rests on.</p>
 
-        <h3 class="h6 mt-4">This application</h3>
+        <h3 class="h6 mt-4">The service</h3>
         <div class="alert alert-light border" role="alert">
             ICTS-Doñana ({% now "Y" %}). <em>Restore4Life — Danube Wetlands HydroApp</em>: hydroperiod
             analysis of Danube basin wetlands. Estación Biológica de Doñana (EBD-CSIC).
             {{ request.scheme }}://{{ request.get_host }}. Accessed {% now "Y-m-d" %}.
         </div>
+        <p class="small text-muted">Cite this when a result came out of this site. A running
+        application answers from whatever it was on the day you asked, which is why the citation
+        carries an address and a date rather than a version.</p>
+
+        {# The software block waits for `ZENODO_DOI`, which is empty until the first release is #}
+        {# archived: a citation page is the last place that should carry a dead DOI. The year is #}
+        {# the release year, not the current one, so that it does not move with the clock. #}
+        {% if zenodo_doi %}
+        <h3 class="h6 mt-4">The software</h3>
+        <div class="alert alert-light border" role="alert">
+            Flores Martín, P., &amp; García Díaz, D. (2026). <em>Restore4Life — Danube Wetlands
+            HydroApp</em>. Zenodo.
+            <a href="https://doi.org/{{ zenodo_doi }}" target="_blank" rel="noopener">https://doi.org/{{ zenodo_doi }}</a>
+        </div>
+        <p class="small text-muted">Cite this when you cite the tool itself, or when you reproduce
+        or build on the code. This is the concept DOI, which always resolves to the latest archived
+        release; if an analysis depends on one particular version, cite that version's own DOI
+        instead, which Zenodo gives alongside it.</p>
+        {% endif %}
 
         <h3 class="h6 mt-4">The computation library</h3>
         <div class="alert alert-light border" role="alert">
