@@ -1,0 +1,49 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+title: "Restore4Life — Danube Wetlands HydroApp"
+abstract: >-
+  Django web application for hydroperiod analysis of Danube basin wetlands on
+  Google Earth Engine. Computes hydroperiod, anomalies, topographic wetness index
+  and zonal statistics over any wetland of the basin or any user-drawn area, with
+  GeoTIFF and CSV export. Each user connects their own Earth Engine account, so
+  computation runs on their own credentials and quota.
+type: software
+authors:
+  - family-names: "Flores Martín"
+    given-names: "Pablo"
+    email: "pablo.flores@ebd.csic.es"
+    affiliation: "Estación Biológica de Doñana (EBD-CSIC)"
+    # Pablo: descomenta la línea de abajo y pon tu ORCID.
+    # orcid: "https://orcid.org/0000-0000-0000-0000"
+  - family-names: "García Díaz"
+    given-names: "Diego"
+    email: "diegogarcia@ebd.csic.es"
+    affiliation: "Estación Biológica de Doñana (EBD-CSIC)"
+    orcid: "https://orcid.org/0000-0002-2757-7112"
+version: 1.0.0
+date-released: "2026-10-14"
+license: MIT
+repository-code: "https://github.com/seguimientos-EBD/restore4life"
+keywords:
+  - hydroperiod
+  - wetlands
+  - Danube
+  - remote sensing
+  - Google Earth Engine
+  - Sentinel-2
+  - Landsat
+  - Django
+references:
+  - type: article
+    title: "Ndvi2Gif: A Python Package for Multi-Seasonal Remote Sensing Analysis with Google Earth Engine"
+    authors:
+      - family-names: "García Díaz"
+        given-names: "Diego"
+        orcid: "https://orcid.org/0000-0002-2757-7112"
+    journal: "Journal of Open Source Software"
+    year: 2026
+    volume: 11
+    issue: 124
+    start: 10654
+    doi: "10.21105/joss.10654"
+    notes: "The computation library this application runs on."
