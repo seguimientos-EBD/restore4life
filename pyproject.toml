@@ -1,6 +1,6 @@
 [project]
 name = "Restore4Life"
-version = "0.1.0"
+version = "1.0.0"
 description = ""
 authors = [
     { name = "Pablo Flores", email = "pablo.flores@ebd.csic.es" },
