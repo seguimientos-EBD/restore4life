@@ -237,14 +237,18 @@
             <tr><td><strong>Hydroperiod</strong></td>
                 <td>Flooded days, counted raw.</td></tr>
             <tr><td><strong>Days with valid data</strong></td>
-                <td>How many cloud-free observations backed the estimate. Low values
+                <td>How many days of the cycle the pixel was actually seen, each
+                cloud-free observation standing for the days around it. Low values
                 mean the hydroperiod there is poorly constrained — read this layer
                 before trusting an odd-looking result.</td></tr>
             <tr><td><strong>First / last flood day</strong></td>
-                <td>When flooding began and ended, as day of year.</td></tr>
+                <td>When flooding began and ended, in days since 1 September, the
+                start of the cycle.</td></tr>
             <tr><td><strong>IRT</strong></td>
-                <td>Temporal regularity, 0 to 1: how consistently a pixel floods across
-                the whole period. It summarises the period rather than one cycle.</td></tr>
+                <td>Temporal representativeness, 0 to 1: how evenly the pixel's
+                cloud-free observations are spread over the cycle. Near 1, they cover
+                it month by month; low values mean they bunch into a few months, so
+                the hydroperiod rests on a partial view of the cycle.</td></tr>
         </tbody>
     </table>
 

@@ -34,6 +34,11 @@ class IndexView(generic.ListView):
 class CitationView(generic.TemplateView):
     template_name = "citation.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['zenodo_doi'] = settings.ZENODO_DOI
+        return context
+
 
 class FaqView(generic.TemplateView):
     template_name = "faq.html"
