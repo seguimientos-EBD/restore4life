@@ -13,8 +13,7 @@ authors:
     given-names: "Pablo"
     email: "pablo.flores@ebd.csic.es"
     affiliation: "Estación Biológica de Doñana (EBD-CSIC)"
-    # Pablo: descomenta la línea de abajo y pon tu ORCID.
-    # orcid: "https://orcid.org/0000-0000-0000-0000"
+    orcid: "https://orcid.org/0009-0007-1636-5919"
   - family-names: "García Díaz"
     given-names: "Diego"
     email: "diegogarcia@ebd.csic.es"
